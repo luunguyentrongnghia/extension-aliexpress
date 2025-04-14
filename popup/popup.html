@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AliScraper</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="popup-container">
+        <!-- Popup Header -->
+        <div class="popup-header">
+            <div class="tab-container">
+                <button class="tab-button active" id="homeTab">Home</button>
+                <button class="tab-button" id="settingsTab">Settings</button>
+                <button class="tab-button" id="helpTab">Help</button>
+            </div>
+        </div>
+
+        <!-- Popup Body -->
+        <div class="popup-body">
+            <div class="home-content" id="homeContent">
+                <h1>Welcome to AliScraper</h1>
+                <p>Import products easily to Spocket.</p>
+                <button class="import-button">Import Product to Spocket</button>
+            </div>
+
+            <div class="settings-content" id="settingsContent" style="display: none;">
+                <h1>Settings</h1>
+                <p>Adjust your preferences.</p>
+            </div>
+
+            <div class="help-content" id="helpContent" style="display: none;">
+                <h1>Help</h1>
+                <p>Find out more about how to use this extension.</p>
+            </div>
+        </div>
+
+        <!-- Popup Footer -->
+        <div class="popup-footer">
+            <p class="footer-text">Powered by <a href="https://spocket.co" target="_blank" class="footer-link">Spocket</a></p>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

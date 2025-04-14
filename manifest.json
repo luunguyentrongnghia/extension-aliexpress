@@ -1,0 +1,29 @@
+{
+    "manifest_version": 3,
+    "name": "VH Extension",
+    "version": "1.0",
+    "description": "A professional Chrome extension built with modular structure.",
+    "action": {
+      "default_popup": "popup/popup.html",
+      "default_icon": {
+      "16": "assets/icons/hello_extensions.png",
+      "48": "assets/icons/hello_extensions.png",
+      "128": "assets/icons/hello_extensions.png"
+    }
+    },
+    "background": {
+      "service_worker": "background/background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": ["*://*.aliexpress.us/*"],
+        "js": ["content/contentScript.js"],
+        "css":["css/content.css"]
+      }
+    ],
+    "permissions": [
+      "activeTab",
+      "storage"
+    ]
+  }
+  
