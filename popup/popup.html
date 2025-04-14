@@ -11,14 +11,28 @@
         <!-- Popup Header -->
         <div class="popup-header">
             <div class="tab-container">
-                <button class="tab-button active" id="homeTab">Home</button>
+                <button class="tab-button active" id="loginTab">Login</button>
+                <button class="tab-button" id="homeTab">Home</button>
                 <button class="tab-button" id="settingsTab">Settings</button>
-                <button class="tab-button" id="helpTab">Help</button>
             </div>
         </div>
 
         <!-- Popup Body -->
         <div class="popup-body">
+            <div class="login-content" id="loginContent" style="display: none;">
+                 <h2>Welcome to Spocket!</h2>
+                <form id="loginForm">
+                    <div class="input-container">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="Enter your email" required />
+                    </div>
+                    <div class="input-container">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" required />
+                    </div>
+                    <button type="submit" class="login-button">Login</button>
+                </form>
+            </div>
             <div class="home-content" id="homeContent">
                 <h1>Welcome to AliScraper</h1>
                 <p>Import products easily to Spocket.</p>
@@ -30,10 +44,6 @@
                 <p>Adjust your preferences.</p>
             </div>
 
-            <div class="help-content" id="helpContent" style="display: none;">
-                <h1>Help</h1>
-                <p>Find out more about how to use this extension.</p>
-            </div>
         </div>
 
         <!-- Popup Footer -->

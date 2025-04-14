@@ -2,11 +2,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Lấy các phần tử tab và nội dung
     const homeTab = document.getElementById("homeTab");
     const settingsTab = document.getElementById("settingsTab");
-    const helpTab = document.getElementById("helpTab");
+    const loginTab = document.getElementById("loginTab");
 
     const homeContent = document.getElementById("homeContent");
     const settingsContent = document.getElementById("settingsContent");
-    const helpContent = document.getElementById("helpContent");
+    const loginContent = document.getElementById("loginContent");
 
     // Khi click vào các tab, hiển thị nội dung của tab đó
     homeTab.addEventListener("click", () => {
@@ -17,14 +17,14 @@ document.addEventListener("DOMContentLoaded", () => {
         setActiveTab(settingsTab, settingsContent);
     });
 
-    helpTab.addEventListener("click", () => {
-        setActiveTab(helpTab, helpContent);
+    loginTab.addEventListener("click", () => {
+        setActiveTab(loginTab, loginContent);
     });
 
     // Hàm để chuyển tab
     function setActiveTab(activeTab, activeContent) {
-        const allTabs = [homeTab, settingsTab, helpTab];
-        const allContents = [homeContent, settingsContent, helpContent];
+        const allTabs = [homeTab, settingsTab, loginTab];
+        const allContents = [homeContent, settingsContent, loginContent];
 
         // Xóa lớp "active" khỏi tất cả các tab và nội dung
         allTabs.forEach(tab => tab.classList.remove("active"));
@@ -36,5 +36,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Mặc định mở tab Home khi popup load
-    setActiveTab(homeTab, homeContent);
+    setActiveTab(loginTab, loginContent);
 });
