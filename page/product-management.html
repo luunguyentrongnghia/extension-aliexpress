@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management - VH Extension</title>
+    <link rel="stylesheet" href="product-management.css">
+    
+    <!-- CSS của Select2 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    
+  
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="assets/icons/logo.png" alt="Logo" class="logo-image">
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#import-list" class="nav-link active" id="import-list-tab">Import List</a></li>
+                    <li><a href="#my-products" class="nav-link" id="my-products-tab">My Products</a></li>
+                    <li><a href="#my-orders" class="nav-link" id="my-orders-tab">My Orders</a></li>
+                    <li><a href="#apps" class="nav-link" id="apps-tab">Apps</a></li>
+                    <li><a href="#help-center" class="nav-link" id="help-center-tab">Help Center</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <div class="content-section active" id="import-list">
+                <h1>My Import List</h1>
+                <div class="search-product-form">
+                    <input type="text" placeholder="Search Your Products" id="search-products">
+                    <button class="action-button">Search</button>
+                </div>
+                <div class="list-products">
+                    <div class="products-container">
+                
+                        <div class="tabs">
+                            <div id="product-tab" class="tab active" >Product</div>
+                            <div id="description-tab" class="tab" >Description</div>
+                            <div id="variants-tab" class="tab">Variants</div>
+                            <div id="images-tab" class="tab">Images</div>
+                        </div>
+                    
+                        <div class="product-wrapper">
+                            
+                            <div id="product"class="tab-content active">
+                                <div class="product-image-container">
+                                    <img src="/assets/images/download.jfif" alt="Product Image" class="product-image">
+                                </div>
+                                <div class="product-details-container">
+                                    <div class="product-details">
+                                        <label for="product-name" class="product-label">Product Name</label>
+                                        <input type="text" value="Friends Printing T Shirt Summer Women Short Sleeve Leisure Top Tee" class="product-input">
+                                    </div>
+                                    <div class="product-details">
+                                        <label for="product-branch" class="product-label">Branch</label>
+                                        <input type="text" placeholder="Enter product branch..." class="product-input">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="description" class="tab-content">
+                                <textarea placeholder="Enter product description..."></textarea>
+                            </div>
+                
+                            <div id="variants" class="tab-content">
+                                <input type="text" placeholder="Enter variants...">
+                            </div>
+                
+                            <div id="images" class="tab-content">
+                                <input type="file" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="product-actions">
+                            <button class="action-button remove-button">Remove Product</button>
+                            <div class="action-right">
+                                <button class="action-button">Save</button>
+                                <button class="action-button">Push To Store</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-section" id="my-products">
+                <h1>My Products</h1>
+                <div class="products-container">
+                    <!-- List of user products -->
+                </div>
+            </div>
+
+            <div class="content-section" id="my-orders">
+                <h1>My Orders</h1>
+                <div class="orders-container">
+                    <!-- Orders details -->
+                </div>
+            </div>
+
+            <div class="content-section" id="apps">
+                <h1>Apps</h1>
+                <!-- Apps related content -->
+            </div>
+
+            <div class="content-section" id="help-center">
+                <h1>Help Center</h1>
+                <!-- Help center content -->
+            </div>
+        </div>
+    </div>
+      <!-- JS của Select2 -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script src="product-management.js"></script>
+    <script>
+        // Khởi tạo Select2 cho dropdown
+        $(document).ready(function() {
+            $('#collection').select2({
+                placeholder: 'Select',
+                allowClear: true  // Cho phép xóa lựa chọn
+            });
+        });
+    </script>
+</body>
+</html>

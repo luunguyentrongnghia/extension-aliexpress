@@ -190,3 +190,6 @@ h2 {
 #loginForm {
   text-align: left;
 }
+#optionsTab {
+  display: none;  /* Ẩn nút Options */
+}

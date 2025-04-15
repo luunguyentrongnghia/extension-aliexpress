@@ -38,3 +38,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Mặc định mở tab Home khi popup load
     setActiveTab(loginTab, loginContent);
 });
+document.addEventListener("DOMContentLoaded", () => {
+    const importButton = document.querySelector('.import-button');
+
+    // Khi người dùng nhấn vào nút "Import Product to Spocket"
+    importButton.addEventListener('click', () => {
+        // Mở trang options.html trong một tab mới
+        chrome.tabs.create({ url: chrome.runtime.getURL('page/product-management.html') });
+    });
+});

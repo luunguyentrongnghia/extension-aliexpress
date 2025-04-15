@@ -1,0 +1,262 @@
+/* General layout */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: #ffffff; /* White background */
+    width: 250px;
+    color: black;
+    padding: 20px;
+    box-sizing: border-box;
+    position: fixed;
+    width: 10%;
+    top: 0;
+    bottom: 0;
+    box-shadow: 4px 0px 6px rgba(0, 0, 0, 0.1)
+}
+
+.sidebar .logo-image {
+    width: 100%;
+    max-width: 100px;
+    margin-bottom: 20px;
+}
+
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar nav ul li {
+    margin-bottom: 15px;
+}
+
+.sidebar nav ul li a {
+    color: #7b777d; /* Purple text */
+    text-decoration: none;
+    font-size: 18px;
+    display: block;
+    padding: 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar nav ul li a.active {
+    background-color: #8e44ad; /* Dark purple when active */
+    color: white;
+}
+
+.sidebar nav ul li a:hover {
+    background-color: #9b59b6; /* Lighter purple on hover */
+    color: white;
+}
+
+/* Main content */
+.content {
+    flex-grow: 1;
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: white;
+    width: 85%;
+    margin-left: 15%;   
+}
+
+/* Content Section */
+.content-section {
+    display: none;
+    margin: auto;
+    max-width: 1400px;
+}
+
+.content-section.active {
+    display: block;
+}
+
+h1 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+#search-products {
+    width: 300px;
+    padding: 10px;
+    margin-right: 10px;
+    font-size: 16px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+.search-product-form{
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    
+}
+.action-button {
+    background-color: #6a0dad;
+    color: white;
+    border: none;
+    padding: 10px 60px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-right: 10px;
+    transition: background-color 0.3s ease;
+}
+
+
+.remove-button {
+    background-color: #ede9e9;
+    color: gray;
+}
+
+.remove-button:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Product container */
+.list-products{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 1400px;
+    margin-top: 50px;
+}
+.products-container {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    width: 100%;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ddd;
+    width: 40%;
+}
+
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    text-align: center;
+    flex-grow: 1;
+    transition: color 0.3s, border-bottom 0.3s;
+    font-size: 16px;
+}
+
+.tab:hover {
+    background-color: #f0f0f0;
+}
+
+.tab.active {
+    border-bottom: 3px solid #5b6f71;
+    color: #5b6f71;
+}
+
+.product-wrapper {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.product-image-container {
+    width: 40%;
+    text-align: center;
+}
+
+.product-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.product-info {
+    width: 55%;
+}
+
+.product-details {
+    margin-bottom: 15px;
+}
+
+.product-details label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #969595;
+}
+
+.product-details input,
+.product-details select,
+.product-details textarea {
+    width: 95%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.product-actions {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+.action-right{
+    width: 40%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.tab-content {
+    display: none;
+    width: 100%;
+    margin-top: 20px;
+}
+#product{
+    gap:20px
+}
+.product-details-container{
+    width: 50%;
+}
+.tab-content.active {
+    display: flex;
+}
+/* Footer */
+footer {
+    background-color: #ecf0f1;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+}
+/* input-name-product */
+
+.product-input {
+    outline: none;
+    transition: all 0.3s ease;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Bóng đổ nhẹ */;
+}
+
+.product-input:focus {
+    background-color: #fff; /* Nền sáng hơn khi focus */
+    box-shadow: 0 0 10px rgba(91, 111, 113, 0.3); /* Hiệu ứng bóng khi focus */
+}
+
+
+.product-input::placeholder {
+    color: #aaa;
+    font-style: italic; /* Làm placeholder có font nghiêng */
+}
