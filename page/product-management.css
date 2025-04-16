@@ -297,3 +297,133 @@ footer {
     border-radius: 0 0 8px 8px;
     /* Bo góc cho phần soạn thảo */
 }
+
+
+#description {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#description textarea {
+    width: 100%;  /* Chiếm hết chiều rộng */
+    height: 150px;  /* Chiều cao vừa phải */
+    padding: 10px;  /* Khoảng cách từ nội dung tới viền */
+    font-size: 14px;  /* Kích thước chữ */
+    font-family: Arial, sans-serif;  /* Font chữ dễ đọc */
+    border: 2px solid #ddd;  /* Viền mỏng màu xám */
+    border-radius: 8px;  /* Các góc bo tròn */
+    outline: none;  /* Xóa bỏ viền khi focus */
+    box-sizing: border-box;  /* Đảm bảo padding không làm tăng kích thước */
+    resize: none;  /* Tắt khả năng thay đổi kích thước textarea */
+    background-color: #f9f9f9;  /* Màu nền sáng */
+    color: #333;  /* Màu chữ */
+    transition: border-color 0.3s ease; 
+}
+
+#description textarea:focus {
+    border-color: #6c5ce7;  
+    box-shadow: 0 0 5px rgba(108, 92, 227, 0.5); 
+}
+
+#description textarea::placeholder {
+    color: #aaa; 
+    font-style: italic;  
+}
+/* Variants Table */
+.variants-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.variants-table th, .variants-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.variants-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.variants-table .variant-checkbox {
+    margin: 0;
+    padding: 0;
+}
+
+.variants-table .variant-image {
+    width: 50px;
+    height: auto;
+}
+
+#select-all {
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+}
+
+
+.variants-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.variants-table tr td {
+    font-size: 14px;
+    color: #333;
+}
+
+.variants-table tr td input[type="checkbox"] {
+    cursor: pointer;
+}
+
+/*image table*/
+/* Container cho các ảnh */
+.image-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Mỗi ảnh là một phần tử có checkbox */
+.image-item {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+/* Ảnh hiển thị trong gallery */
+.variant-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* Nút checkbox */
+.image-checkbox {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border-radius: 50%;
+    padding: 5px;
+    cursor: pointer;
+}
+
+/* Thêm hiệu ứng hover cho các ảnh */
+.image-item:hover {
+    border-color: #6c5ce7;
+}
+
+/* Checkbox khi hover */
+.image-checkbox:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}

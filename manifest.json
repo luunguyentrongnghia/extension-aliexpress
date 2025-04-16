@@ -16,9 +16,14 @@
     },
     "content_scripts": [
       {
-        "matches": ["*://*.aliexpress.us/*"],
-        "js": ["content/contentScript.js"],
-        "css":["css/content.css"]
+        "matches": ["*://*.aliexpress.us/w/*"],
+        "js": ["content/btnallScript.js"],
+        "css":["css/btnallScript.css"]
+      },
+      {
+        "matches": ["*://*.aliexpress.us/item/*"],
+        "js": ["content/btnImportProduct.js"],
+        "css":["css/btnallScript.css"]
       }
     ],
     "permissions": [

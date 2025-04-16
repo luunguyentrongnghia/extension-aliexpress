@@ -1,13 +1,12 @@
 let htmlTemplate = `<div class="import-button-container">
-    <button class="import-button">Import to Spocket</button>
+    <button class="import-button">Import all products</button>
 </div>`;
 let link = document.createElement("link");
 link.rel = "stylesheet";
 link.type = "text/css";
-link.href = chrome.runtime.getURL('css/content.css');
-document.head.appendChild(link);
+link.href = chrome.runtime.getURL('css/btnallScript.css');
 window.onload = () => {
-    const wrapperObject = document.querySelector(".index-page");
+    const wrapperObject = document.querySelector("#root");
     console.log(wrapperObject);
     
     if (wrapperObject !== null) {

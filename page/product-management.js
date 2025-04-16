@@ -41,21 +41,15 @@ function showTabProduct(tabName) {
 }
 
 
-//input tag
-document.querySelector('.product-tags-list').addEventListener('click', function(event) {
-    // Kiểm tra xem phần tử nhấn vào có phải là nút xóa (dấu "x") không
-    if (event.target.classList.contains('tag-remove-btn')) {
-        event.target.parentElement.remove();  // Xóa tag khi nhấn vào dấu "x"
-    }
-});;
+const imageCheckboxes = document.querySelectorAll('.image-checkbox');
 
-document.getElementById('new-tag-input').addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' && event.target.value.trim() !== '') {
-        const newTag = document.createElement('div');
-        newTag.classList.add('product-tag-item');
-        newTag.innerHTML = `${event.target.value} <span class="tag-remove-btn">x</span>`;
-        document.querySelector('.product-tags-list').insertBefore(newTag, event.target);
-        event.target.value = '';  // Clear the input field
-    }
+// Xử lý khi có thay đổi trong trạng thái checkbox
+imageCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            console.log(`Image ${e.target.id} was selected`);
+        } else {
+            console.log(`Image ${e.target.id} was deselected`);
+        }
+    });
 });
-//input tag
