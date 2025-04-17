@@ -15,11 +15,21 @@ window.onload = () => {
         
         // Lắng nghe sự kiện click để thực hiện logic lấy dữ liệu sản phẩm
         const importButton = wrapperObject.querySelector(".import-button");
-        importButton.addEventListener("click", () => {
+        importButton.addEventListener("click",async () => {
             console.log("Fetching product data...");
-            // Logic lấy dữ liệu sản phẩm từ trang
+            await scrapeProductsData();
         });
     }
 };
 
+async function scrapeProductsData() {
+    const productLinks = document.querySelectorAll('.hm_bl a');  // Các link sản phẩm
 
+    // Gửi yêu cầu mở các tab mới cho từng sản phẩm
+    productLinks.forEach((link) => {
+        chrome.runtime.sendMessage({
+            action: "openTab",  // Gửi yêu cầu mở tab mới
+            url: link.href
+        });
+    });
+}

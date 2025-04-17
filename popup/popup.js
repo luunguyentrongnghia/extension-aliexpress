@@ -47,3 +47,60 @@ document.addEventListener("DOMContentLoaded", () => {
         chrome.tabs.create({ url: chrome.runtime.getURL('page/product-management.html') });
     });
 });
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    try {
+        const response = await fetch('http://127.0.0.1:8000/api/loginExtention/', {  // URL API Django
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'email-username': username,
+                'password': password
+            })
+        });
+        if (!response.ok) {
+            throw new Error('Invalid credentials');
+        }
+
+        const data = await response.json();
+        console.log(data);
+        // Lưu token vào chrome.storage
+        await chrome.storage.local.set({
+            accessToken: data.access,
+            refreshToken: data.refresh
+        });
+
+        document.getElementById('status').innerText = 'Login successful!';
+    } catch (error) {
+        document.getElementById('status').innerText = 'Login failed: ' + error.message;
+
+    }
+})
+
+async function refreshAccessToken() {
+    const { refreshToken } = await chrome.storage.local.get('refreshToken');
+    
+    const response = await fetch('http://localhost:8000/api/token/refresh/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh: refreshToken })
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to refresh token');
+    }
+
+    const data = await response.json();
+
+    // Lưu access và refresh token mới vào chrome.storage
+    await chrome.storage.local.set({
+        accessToken: data.access,
+        refreshToken: data.refresh
+    });
+
+    return data.access;  // Trả về access token mới
+}
