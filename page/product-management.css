@@ -427,3 +427,12 @@ footer {
 .image-checkbox:hover {
     background-color: rgba(0, 0, 0, 0.8);
 }
+
+#editor-container {
+    max-height: 600px; /* Giới hạn chiều cao */
+    overflow-y: auto; /* Hiển thị thanh cuộn dọc khi nội dung vượt quá chiều cao */
+    border: 1px solid #ccc; /* Đặt viền cho vùng soạn thảo */
+    border-radius: 8px; /* Làm tròn các góc */
+    padding: 10px;
+}
+

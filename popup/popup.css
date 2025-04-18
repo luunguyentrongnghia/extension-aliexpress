@@ -193,3 +193,19 @@ h2 {
 #optionsTab {
   display: none;  /* Ẩn nút Options */
 }
+
+.logout-button {
+  padding: 10px 20px;
+  background-color: #ff4757; /* Màu đỏ cho nút */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.logout-button:hover {
+  background-color: #ff6b81; /* Hiệu ứng hover */
+}

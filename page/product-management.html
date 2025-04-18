@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Management - VH Extension</title>
     <link rel="stylesheet" href="product-management.css">
-    
+    <link href="../lib/quill.snow.css" rel="stylesheet">
     <!-- CSS của Select2 -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
     
   
 </head>
@@ -64,8 +63,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div id="description" class="tab-content">
-                                <textarea placeholder="Enter product description..."></textarea>
+                            <!-- <textarea placeholder="Enter product description..."></textarea> -->
+                            <div id="description" class="tab-content" style="flex-direction: column;">
+                                <div id="editor-container"></div>
                             </div>
                 
                             <div id="variants" class="tab-content">
@@ -175,18 +175,7 @@
             </div>
         </div>
     </div>
-      <!-- JS của Select2 -->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script src="../lib/quill.min.js"></script>
     <script src="product-management.js"></script>
-    <script>
-        // Khởi tạo Select2 cho dropdown
-        $(document).ready(function() {
-            $('#collection').select2({
-                placeholder: 'Select',
-                allowClear: true  // Cho phép xóa lựa chọn
-            });
-        });
-    </script>
 </body>
 </html>

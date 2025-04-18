@@ -1,3 +1,18 @@
+
+
+const quill = new Quill('#editor-container', {
+    theme: 'snow',
+    modules: {
+        toolbar: [
+            [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['bold', 'italic', 'underline'],
+            ['link'],
+            [{ 'align': [] }],
+            ['clean']                                         
+        ]
+    }
+});
 // Hàm này để thêm sự kiện click cho tất cả các tab
 const tabMenuIds = ["import-list", "my-products", "my-orders", "apps", "help-center"];
 tabMenuIds.forEach(tabId => {

@@ -7,7 +7,6 @@ link.type = "text/css";
 link.href = chrome.runtime.getURL('css/btnallScript.css');
 window.onload = () => {
     const wrapperObject = document.querySelector("#root");
-    console.log(wrapperObject);
     
     if (wrapperObject !== null) {
         // Sử dụng insertAdjacentHTML để thêm HTML vào cuối phần tử một cách an toàn
