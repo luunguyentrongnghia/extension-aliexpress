@@ -1,41 +1,41 @@
 
-// Giải mã JWT để kiểm tra thời gian hết hạn
-function isAccessTokenExpired(token) {
-    try {
-        const decoded = jwt_decode(token);  // Giải mã token
-        const currentTime = Date.now() / 1000;  // Thời gian hiện tại tính bằng giây (epoch)
-        return decoded.exp < currentTime;  // Kiểm tra nếu token đã hết hạn
-    } catch (error) {
-        console.error("Invalid token", error);
-        return true;  // Nếu token không hợp lệ, coi như đã hết hạn
-    }
-}
-// Hàm làm mới access token sử dụng refresh token
-async function refreshAccessToken() {
-    const { refreshToken } = await chrome.storage.local.get('refreshToken');  // Lấy refresh token từ storage
+// // Giải mã JWT để kiểm tra thời gian hết hạn
+// function isAccessTokenExpired(token) {
+//     try {
+//         const decoded = jwt_decode(token);  // Giải mã token
+//         const currentTime = Date.now() / 1000;  // Thời gian hiện tại tính bằng giây (epoch)
+//         return decoded.exp < currentTime;  // Kiểm tra nếu token đã hết hạn
+//     } catch (error) {
+//         console.error("Invalid token", error);
+//         return true;  // Nếu token không hợp lệ, coi như đã hết hạn
+//     }
+// }
+// // Hàm làm mới access token sử dụng refresh token
+// async function refreshAccessToken() {
+//     const { refreshToken } = await chrome.storage.local.get('refreshToken');  // Lấy refresh token từ storage
 
-    const response = await fetch('http://localhost:8000/api/token/refresh/', {  // Gọi API refresh token
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            refresh: refreshToken
-        })
-    });
+//     const response = await fetch('http://localhost:8000/api/token/refresh/', {  // Gọi API refresh token
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({
+//             refresh: refreshToken
+//         })
+//     });
 
-    if (!response.ok) {
-        throw new Error('Failed to refresh token');
-    }
+//     if (!response.ok) {
+//         throw new Error('Failed to refresh token');
+//     }
 
-    const data = await response.json();
-    await chrome.storage.local.set({
-        accessToken: data.access,
-        refreshToken: data.refresh
-    });
+//     const data = await response.json();
+//     await chrome.storage.local.set({
+//         accessToken: data.access,
+//         refreshToken: data.refresh
+//     });
 
-    return data.access;  // Trả về access token mới
-}
+//     return data.access;  // Trả về access token mới
+// }
 // Hàm gọi API với kiểm tra token
 // async function callApiWithTokenCheck(apiUrl, options = {}) {
 //     const { accessToken } = await chrome.storage.local.get('accessToken');  // Lấy access token từ storage
