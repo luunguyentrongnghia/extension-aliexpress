@@ -17,7 +17,7 @@ window.onload = async() => {
         const { accessToken } = await chrome.storage.local.get('accessToken');
         const { refreshToken } = await chrome.storage.local.get('refreshToken');
         importButton.addEventListener("click", async() => {
-            if (!refreshToken || !await isRefreshTokenValid(refreshToken)) {
+            if (!refreshToken) {
                 alert(' Vui lòng đăng nhập.');
                 return; 
             }
@@ -42,7 +42,11 @@ async function scrapeProductData() {
     const pdprightWrap = document.querySelector('.pdp-info-right');
     const ctnDescription = document.querySelector('[data-pl="product-description"]');
     if(ctnDescription){
-        description = ctnDescription.innerHTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML= ctnDescription.innerHTML
+        const scripts = tempDiv.querySelectorAll('script');
+        scripts.forEach(script => script.remove());
+        description = tempDiv.innerHTML
     }
     if (pdpLeftWrap) {
         const thumbnailImg = pdpLeftWrap.querySelectorAll('[class^="slider--img"]');

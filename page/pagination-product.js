@@ -1,0 +1,278 @@
+let currentPage = 1;
+let totalPages = 1;
+let limit = 5;  // Số sản phẩm mỗi trang
+
+// Hàm gọi API và load dữ liệu sản phẩm
+async function fetchProducts(page) {
+    const offset = (page - 1) * limit;
+    const { accessToken } = await chrome.storage.local.get('accessToken');
+    if(isAccessTokenExpired(accessToken)){
+        await refreshAccessToken();
+    }
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/ex/product/?limit=${limit}&offset=${offset}`,{
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`  // Gửi access token trong header
+        }
+        });
+        const data = await response.json();
+        console.log('API Response:', data);
+        if (data.products && data.products.length > 0) {
+            displayProducts(data.products);  // Hiển thị sản phẩm
+            totalPages = data.total_pages;  // Cập nhật tổng số trang
+            generatePageNumbers();  // Tạo danh sách số trang
+        }
+
+        // Cập nhật trạng thái của các nút phân trang
+        document.getElementById('prev-page').disabled = page === 1;
+        document.getElementById('next-page').disabled = page === totalPages;
+    } catch (error) {
+        console.error('Error fetching products:', error);
+    }
+}
+function isAccessTokenExpired(token) {
+    try {
+        const decoded = jwt_decode(token);  // Giải mã token
+        const currentTime = Date.now() / 1000;  // Thời gian hiện tại tính bằng giây (epoch)
+        return decoded.exp < currentTime;  // Kiểm tra nếu token đã hết hạn
+    } catch (error) {
+        console.error("Invalid token", error);
+        return true;  // Nếu token không hợp lệ, coi như đã hết hạn
+    }
+}
+async function refreshAccessToken() {
+    const { refreshToken } = await chrome.storage.local.get('refreshToken');  // Lấy refresh token từ storage
+
+    const response = await fetch('http://localhost:8000/api/token/refresh/', {  // Gọi API refresh token
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            refresh: refreshToken
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to refresh token');
+    }
+
+    const data = await response.json();
+    await chrome.storage.local.set({
+        accessToken: data.access,
+        refreshToken: data.refresh
+    });
+
+    return data.access;  // Trả về access token mới
+}
+function convertToHTML(rawString) {
+    // Tạo một phần tử tạm thời để gán chuỗi vào
+    const tempElement = document.createElement('div');
+    tempElement.innerHTML = rawString;  // Gán chuỗi vào phần tử DOM
+
+    // Trả về phần tử HTML đã được chuyển đổi
+    return tempElement.innerHTML;  // Hoặc bạn có thể sử dụng tempElement.childNodes nếu cần.
+}
+// Hiển thị các sản phẩm trong danh sách
+function displayProducts(products) {
+    const productListContainer = document.querySelector('.list-products');
+    console.log(productListContainer);
+    productListContainer.innerHTML = '';  // Xóa danh sách sản phẩm cũ
+
+    products.forEach(product => {
+        const productElement = document.createElement('div');
+        productElement.classList.add('products-container');
+        productElement.setAttribute('id-ctn-product', product.id);
+        productElement.innerHTML = `
+            <div class="tabs">
+                <div id="product-tab-${product.id}" class="tab active">Product</div>
+                <div id="description-tab-${product.id}" class="tab">Description</div>
+                <div id="variants-tab-${product.id}" class="tab">Variants</div>
+                <div id="images-tab-${product.id}" class="tab">Images</div>
+            </div>
+
+            <div class="product-wrapper">
+                <div id="product-${product.id}" class="tab-content active">
+                    <div class="product-image-container">
+                        <img src="${product.images[0].uri}" alt="Product Image" class="product-image">
+                    </div>
+                    <div class="product-details-container">
+                        <div class="product-details">
+                            <label for="product-name" class="product-label">Product Name</label>
+                            <input type="text" value="${product.title}" class="product-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="description-${product.id}" class="tab-content" style="flex-direction: column;">
+                    <div id="editor-container-${product.id}" class="editor-container"></div>
+                </div>
+
+                <div id="variants-${product.id}" class="tab-content">
+                    <table class="variants-table">
+                        <thead>
+                            <tr>   
+                                <th>Image</th>
+                                <th>Color</th>
+                                <th>Size</th>
+                                <th>Price</th>
+                                <th>List price</th>
+                                <th>Currency</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${product.skus.map(sku => `
+                                <tr>
+                                    <td><img src="${sku.uri}" alt="Variant Image" class="variant-image" /></td>
+                                    <td>${sku.color}</td>
+                                    <td>${sku.size}</td>
+                                    <td>${sku.price}</td>
+                                    <td>${sku.list_price}</td>
+                                    <td>${sku.currency}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="images-${product.id}" class="tab-content">
+                    <div class="image-gallery">
+                        ${product.images.map(image => `
+                            <div class="image-item">
+                                <label for="image${image.id}-${product.id}">
+                                    <img src="${image.uri}" alt="Image ${image.id}" class="variant-image">
+                                </label>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+            </div>
+            <div class="product-actions">
+                <button class="action-button remove-button" data-product-id="${product.id}">Remove Product</button>
+                <div class="action-right">
+                    <button class="action-button">Save</button>
+                    <button class="action-button">Push To Store</button>
+                </div>
+            </div>
+        `;
+        const removeButton = productElement.querySelector('.remove-button');
+        removeButton.addEventListener('click', () => {
+            const productId = removeButton.getAttribute('data-product-id');
+            deleteProduct(productId);
+        });
+
+        // Thêm sản phẩm vào danh sách sản phẩm
+        productListContainer.appendChild(productElement);
+        
+        // Khởi tạo Quill cho mỗi editor container của sản phẩm
+        const editorContainer = document.querySelector(`#editor-container-${product.id}`);
+        if (editorContainer) {
+            const quill = new Quill(editorContainer, {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['bold', 'italic', 'underline'],
+                        ['link'],
+                        [{ 'align': [] }],
+                        ['clean']
+                    ]
+                }
+            });
+        if(product.description){
+            const converdata = convertToHTML(product.description);
+            quill.clipboard.dangerouslyPasteHTML(converdata);
+        }
+  
+        }
+
+        // Thêm sự kiện cho các tab
+        const tabProductIds = ["product", "description", "variants", "images"];
+        tabProductIds.forEach(tabName => {
+            document.querySelector(`#${tabName}-tab-${product.id}`).addEventListener("click", () => showTabProduct(tabName, productElement));
+        });
+    });
+}
+function showTabProduct(tabName, productElement) {
+    const tabs = productElement.querySelectorAll('.tab');
+    const contents = productElement.querySelectorAll('.tab-content');
+
+    // Ẩn tất cả các tab và nội dung
+    tabs.forEach(tab => tab.classList.remove('active'));
+    contents.forEach(content => content.classList.remove('active'));
+
+    // Hiển thị nội dung của tab và đánh dấu tab là active
+    productElement.querySelector(`#${tabName}-${productElement.getAttribute('id-ctn-product')}`).classList.add('active');
+    productElement.querySelector(`#${tabName}-${productElement.getAttribute('id-ctn-product')}`).classList.add('active');
+}
+// Tạo danh sách các số trang
+function generatePageNumbers() {
+    const pageListContainer = document.getElementById('page-list');
+    pageListContainer.innerHTML = '';  // Xóa các số trang cũ
+
+    for (let i = 1; i <= totalPages; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.innerText = i;
+        pageButton.classList.add('page-button');
+        if (i === currentPage) {
+            pageButton.classList.add('active');
+        }
+
+        pageButton.addEventListener('click', () => {
+            currentPage = i;
+            fetchProducts(currentPage);  // Gọi lại API khi nhấn vào số trang
+        });
+
+        pageListContainer.appendChild(pageButton);
+    }
+}
+
+// Xử lý sự kiện khi nhấn vào các nút phân trang
+document.getElementById('prev-page').addEventListener('click', () => {
+    if (currentPage > 1) {
+        currentPage--;
+        fetchProducts(currentPage);
+    }
+});
+
+document.getElementById('next-page').addEventListener('click', () => {
+    if (currentPage < totalPages) {
+        currentPage++;
+        fetchProducts(currentPage);
+    }
+});
+
+// Tải sản phẩm khi trang được tải
+window.onload = () => fetchProducts(currentPage);
+
+async function deleteProduct(productId) {
+    const { accessToken } = await chrome.storage.local.get('accessToken');
+    try {
+        const response = await fetch(`http://localhost:8000/api/ex/product/delete/${productId}/`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                // Thêm access token nếu cần
+                'Authorization': `Bearer ${accessToken}`,
+            }
+        });
+
+        if (response.ok) {
+            // Nếu xóa thành công, xóa sản phẩm khỏi giao diện
+            const productElement = document.querySelector(`[id-ctn-product='${productId}']`);
+            if (productElement) {
+                productElement.remove();
+            }
+            alert('Product removed successfully');
+        } else {
+            alert('Failed to delete the product');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the product');
+    }
+}

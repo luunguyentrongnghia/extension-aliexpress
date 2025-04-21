@@ -36,116 +36,121 @@
                     <input type="text" placeholder="Search Your Products" id="search-products">
                     <button class="action-button">Search</button>
                 </div>
-                <div class="list-products">
-                    <div class="products-container">
-                
-                        <div class="tabs">
-                            <div id="product-tab" class="tab active" >Product</div>
-                            <div id="description-tab" class="tab" >Description</div>
-                            <div id="variants-tab" class="tab">Variants</div>
-                            <div id="images-tab" class="tab">Images</div>
-                        </div>
+                <div class="ctn-poduct-list">
+                    <div class="list-products">
+                        <!-- <div class="products-container">
                     
-                        <div class="product-wrapper">
-                            
-                            <div id="product"class="tab-content active">
-                                <div class="product-image-container">
-                                    <img src="/assets/images/download.jfif" alt="Product Image" class="product-image">
-                                </div>
-                                <div class="product-details-container">
-                                    <div class="product-details">
-                                        <label for="product-name" class="product-label">Product Name</label>
-                                        <input type="text" value="Friends Printing T Shirt Summer Women Short Sleeve Leisure Top Tee" class="product-input">
+                            <div class="tabs">
+                                <div id="product-tab" class="tab active" >Product</div>
+                                <div id="description-tab" class="tab" >Description</div>
+                                <div id="variants-tab" class="tab">Variants</div>
+                                <div id="images-tab" class="tab">Images</div>
+                            </div>
+                        
+                            <div class="product-wrapper">
+                                
+                                <div id="product"class="tab-content active">
+                                    <div class="product-image-container">
+                                        <img src="/assets/images/download.jfif" alt="Product Image" class="product-image">
                                     </div>
-                                    <div class="product-details">
-                                        <label for="product-branch" class="product-label">Branch</label>
-                                        <input type="text" placeholder="Enter product branch..." class="product-input">
+                                    <div class="product-details-container">
+                                        <div class="product-details">
+                                            <label for="product-name" class="product-label">Product Name</label>
+                                            <input type="text" value="Friends Printing T Shirt Summer Women Short Sleeve Leisure Top Tee" class="product-input">
+                                        </div>
+                                        <div class="product-details">
+                                            <label for="product-branch" class="product-label">Branch</label>
+                                            <input type="text" placeholder="Enter product branch..." class="product-input">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="description" class="tab-content" style="flex-direction: column;">
+                                    <div id="editor-container"></div>
+                                </div>
+                    
+                                <div id="variants" class="tab-content">
+                                    <table class="variants-table">
+                                            <thead>
+                                                <tr>
+                                                    <th><input type="checkbox" id="select-all" /></th>
+                                                    <th>Image</th>
+                                                    <th>SKU</th>
+                                                    <th>Size</th>
+                                                    <th>Color</th>
+                                                    <th>Inventory</th>
+                                                    <th>Price</th>
+                                                    <th>Shipping Price</th>
+                                                    <th>Sales Price</th>
+                                                    <th>Profit</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><input type="checkbox" class="variant-checkbox" /></td>
+                                                    <td><img src="/assets/images/download.jfif" alt="Variant Image" class="variant-image" /></td>
+                                                    <td>Tshirt123-L</td>
+                                                    <td>L</td>
+                                                    <td>Red</td>
+                                                    <td>10</td>
+                                                    <td>$5.00</td>
+                                                    <td>$0.00</td>
+                                                    <td>$12.00</td>
+                                                    <td>$7.00</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><input type="checkbox" class="variant-checkbox" /></td>
+                                                    <td><img src="/assets/images/download.jfif" alt="Variant Image" class="variant-image" /></td>
+                                                    <td>Tshirt123-M</td>
+                                                    <td>M</td>
+                                                    <td>Blue</td>
+                                                    <td>15</td>
+                                                    <td>$5.00</td>
+                                                    <td>$0.00</td>
+                                                    <td>$12.00</td>
+                                                    <td>$7.00</td>
+                                                </tr>
+                                             
+                                            </tbody>
+                                     </table>
+                                </div>
+                    
+                            <div id="images" class="tab-content">
+                                <div class="image-gallery">
+                                    <div class="image-item">
+                                        <input type="checkbox" id="image1" class="image-checkbox">
+                                        <label for="image1">
+                                            <img src="/assets/images/download.jfif" alt="Image 1" class="variant-image">
+                                        </label>
+                                    </div>
+                                    <div class="image-item">
+                                        <input type="checkbox" id="image2" class="image-checkbox">
+                                        <label for="image2">
+                                            <img src="/assets/images/download.jfif" alt="Image 2" class="variant-image">
+                                        </label>
+                                    </div>
+                                    <div class="image-item">
+                                        <input type="checkbox" id="image3" class="image-checkbox">
+                                        <label for="image3">
+                                            <img src="/assets/images/download.jfif" alt="Image 3" class="variant-image">
+                                        </label>
                                     </div>
                                 </div>
                             </div>
-                            <!-- <textarea placeholder="Enter product description..."></textarea> -->
-                            <div id="description" class="tab-content" style="flex-direction: column;">
-                                <div id="editor-container"></div>
                             </div>
-                
-                            <div id="variants" class="tab-content">
-                                <table class="variants-table">
-                                        <thead>
-                                            <tr>
-                                                <th><input type="checkbox" id="select-all" /></th> <!-- Checkbox to select all -->
-                                                <th>Image</th>
-                                                <th>SKU</th>
-                                                <th>Size</th>
-                                                <th>Color</th>
-                                                <th>Inventory</th>
-                                                <th>Price</th>
-                                                <th>Shipping Price</th>
-                                                <th>Sales Price</th>
-                                                <th>Profit</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td><input type="checkbox" class="variant-checkbox" /></td>
-                                                <td><img src="/assets/images/download.jfif" alt="Variant Image" class="variant-image" /></td>
-                                                <td>Tshirt123-L</td>
-                                                <td>L</td>
-                                                <td>Red</td>
-                                                <td>10</td>
-                                                <td>$5.00</td>
-                                                <td>$0.00</td>
-                                                <td>$12.00</td>
-                                                <td>$7.00</td>
-                                            </tr>
-                                            <tr>
-                                                <td><input type="checkbox" class="variant-checkbox" /></td>
-                                                <td><img src="/assets/images/download.jfif" alt="Variant Image" class="variant-image" /></td>
-                                                <td>Tshirt123-M</td>
-                                                <td>M</td>
-                                                <td>Blue</td>
-                                                <td>15</td>
-                                                <td>$5.00</td>
-                                                <td>$0.00</td>
-                                                <td>$12.00</td>
-                                                <td>$7.00</td>
-                                            </tr>
-                                            <!-- More variants here -->
-                                        </tbody>
-                                 </table>
-                            </div>
-                
-                        <div id="images" class="tab-content">
-                            <div class="image-gallery">
-                                <!-- Các ảnh đã có sẵn sẽ được hiển thị tại đây -->
-                                <div class="image-item">
-                                    <input type="checkbox" id="image1" class="image-checkbox">
-                                    <label for="image1">
-                                        <img src="/assets/images/download.jfif" alt="Image 1" class="variant-image">
-                                    </label>
+                            <div class="product-actions">
+                                <button class="action-button remove-button">Remove Product</button>
+                                <div class="action-right">
+                                    <button class="action-button">Save</button>
+                                    <button class="action-button">Push To Store</button>
                                 </div>
-                                <div class="image-item">
-                                    <input type="checkbox" id="image2" class="image-checkbox">
-                                    <label for="image2">
-                                        <img src="/assets/images/download.jfif" alt="Image 2" class="variant-image">
-                                    </label>
-                                </div>
-                                <div class="image-item">
-                                    <input type="checkbox" id="image3" class="image-checkbox">
-                                    <label for="image3">
-                                        <img src="/assets/images/download.jfif" alt="Image 3" class="variant-image">
-                                    </label>
-                                </div>
-                                <!-- Thêm ảnh mới vào đây -->
                             </div>
-                        </div>
-                        </div>
-                        <div class="product-actions">
-                            <button class="action-button remove-button">Remove Product</button>
-                            <div class="action-right">
-                                <button class="action-button">Save</button>
-                                <button class="action-button">Push To Store</button>
-                            </div>
-                        </div>
+                        </div> -->
+                        
+                    </div>
+                    <div id="pagination">
+                        <button id="prev-page">Previous</button>
+                        <div id="page-list"></div> <!-- Hiển thị số trang ở đây -->
+                        <button id="next-page">Next</button>
                     </div>
                 </div>
             </div>
@@ -177,5 +182,7 @@
     </div>
     <script src="../lib/quill.min.js"></script>
     <script src="product-management.js"></script>
+    <script src="pagination-product.js"></script>
 </body>
 </html>
+

@@ -187,7 +187,7 @@ h1 {
 
 .product-image {
     width: 100%;
-    height: auto;
+    height: 325px;
     border-radius: 8px;
 }
 
@@ -230,8 +230,10 @@ h1 {
 
 .tab-content {
     display: none;
+    gap:20px;
     width: 100%;
     margin-top: 20px;
+    justify-content: space-around;
 }
 
 #product {
@@ -260,9 +262,6 @@ footer {
     outline: none;
     transition: all 0.3s ease;
     background-color: #f9f9f9;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    /* Bóng đổ nhẹ */
-    ;
 }
 
 .product-input:focus {
@@ -304,31 +303,7 @@ footer {
     margin-bottom: 20px;
 }
 
-#description textarea {
-    width: 100%;  /* Chiếm hết chiều rộng */
-    height: 150px;  /* Chiều cao vừa phải */
-    padding: 10px;  /* Khoảng cách từ nội dung tới viền */
-    font-size: 14px;  /* Kích thước chữ */
-    font-family: Arial, sans-serif;  /* Font chữ dễ đọc */
-    border: 2px solid #ddd;  /* Viền mỏng màu xám */
-    border-radius: 8px;  /* Các góc bo tròn */
-    outline: none;  /* Xóa bỏ viền khi focus */
-    box-sizing: border-box;  /* Đảm bảo padding không làm tăng kích thước */
-    resize: none;  /* Tắt khả năng thay đổi kích thước textarea */
-    background-color: #f9f9f9;  /* Màu nền sáng */
-    color: #333;  /* Màu chữ */
-    transition: border-color 0.3s ease; 
-}
 
-#description textarea:focus {
-    border-color: #6c5ce7;  
-    box-shadow: 0 0 5px rgba(108, 92, 227, 0.5); 
-}
-
-#description textarea::placeholder {
-    color: #aaa; 
-    font-style: italic;  
-}
 /* Variants Table */
 .variants-table {
     width: 100%;
@@ -428,7 +403,7 @@ footer {
     background-color: rgba(0, 0, 0, 0.8);
 }
 
-#editor-container {
+.editor-container {
     max-height: 600px; /* Giới hạn chiều cao */
     overflow-y: auto; /* Hiển thị thanh cuộn dọc khi nội dung vượt quá chiều cao */
     border: 1px solid #ccc; /* Đặt viền cho vùng soạn thảo */
@@ -436,3 +411,61 @@ footer {
     padding: 10px;
 }
 
+
+#pagination {
+    display: flex;
+    justify-content: center; /* Căn giữa */
+    align-items: center;
+    gap: 10px; /* Khoảng cách giữa các phần tử */
+    margin-top: 20px;
+}
+
+#pagination button {
+    background-color: #6c5ce7; /* Màu nền của nút */
+    color: white; /* Màu chữ */
+    border: 1px solid #6c5ce7;
+    border-radius: 5px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+#pagination button:hover {
+    background-color: #5a4ed8; /* Màu nền khi hover */
+    transform: scale(1.05); /* Hiệu ứng phóng to nhẹ khi hover */
+}
+
+#pagination button:disabled {
+    background-color: #d1d1d1;
+    cursor: not-allowed;
+}
+
+#page-list {
+    display: flex;
+    gap: 5px;
+}
+
+#page-list div {
+    background-color: #e0e0e0;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+#page-list div:hover {
+    background-color: #d1d1d1;
+    transform: scale(1.05);
+}
+
+#page-list .active {
+    background-color: #6c5ce7; /* Màu nền khi trang hiện tại */
+    color: white;
+}
+
+#pagination .active {
+    background-color: #6c5ce7;
+    color: white;
+}

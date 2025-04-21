@@ -1,27 +1,9 @@
 
 
-const quill = new Quill('#editor-container', {
-    theme: 'snow',
-    modules: {
-        toolbar: [
-            [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            ['bold', 'italic', 'underline'],
-            ['link'],
-            [{ 'align': [] }],
-            ['clean']                                         
-        ]
-    }
-});
 // Hàm này để thêm sự kiện click cho tất cả các tab
-const tabMenuIds = ["import-list", "my-products", "my-orders", "apps", "help-center"];
+ tabMenuIds = ["import-list", "my-products", "my-orders", "apps", "help-center"];
 tabMenuIds.forEach(tabId => {
     document.getElementById(`${tabId}-tab`).addEventListener("click", () => showTabMenu(tabId));
-});
-const tabProductIds = ["product", "description", "variants", "images"]; // Dùng tên tab thay vì id tab
-tabProductIds.forEach(tabName => {
-    // Thêm sự kiện click cho mỗi tab
-    document.getElementById(`${tabName}-tab`).addEventListener("click", () => showTabProduct(tabName));
 });
 function showTabMenu(tabId) {
     // Ẩn tất cả các phần nội dung
@@ -42,18 +24,6 @@ function updateActiveLink(tabId) {
 }
 
 // Hàm này sẽ dùng cho các tab nội dung (Product, Description, Variants, Images)
-function showTabProduct(tabName) {
-    const tabs = document.querySelectorAll('.tab'); // Lấy tất cả các tab
-    const contents = document.querySelectorAll('.tab-content'); // Lấy tất cả các nội dung tab
-
-    // Ẩn tất cả các tab và nội dung
-    tabs.forEach(tab => tab.classList.remove('active'));
-    contents.forEach(content => content.classList.remove('active'));
-
-    // Hiển thị nội dung của tab và đánh dấu tab là active
-    document.querySelector(`#${tabName}`).classList.add('active');
-    document.querySelector(`#${tabName}-tab`).classList.add('active');
-}
 
 
 const imageCheckboxes = document.querySelectorAll('.image-checkbox');
