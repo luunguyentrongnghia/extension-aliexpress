@@ -6,12 +6,14 @@
     <title>Product Management - VH Extension</title>
     <link rel="stylesheet" href="product-management.css">
     <link href="../lib/quill.snow.css" rel="stylesheet">
+    <link href="../lib/select2.min.css" rel="stylesheet">
+    <link href="../lib/bootstrap.min.css" rel="stylesheet">
     <!-- CSS của Select2 -->
     
   
 </head>
 <body>
-    <div class="container">
+    <div class="container-wrapper">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">
@@ -157,9 +159,6 @@
 
             <div class="content-section" id="my-products">
                 <h1>My Products</h1>
-                <div class="products-container">
-                    <!-- List of user products -->
-                </div>
             </div>
 
             <div class="content-section" id="my-orders">
@@ -180,9 +179,14 @@
             </div>
         </div>
     </div>
+    <script src="../lib/jquery-3.6.0.min.js"></script>
+    <script src="../lib/popper.min.js"></script>
+    <script src="../lib/bootstrap.min.js"></script>
     <script src="../lib/quill.min.js"></script>
+    <script src="../lib/select2.min.js"></script>
     <script src="product-management.js"></script>
     <script src="pagination-product.js"></script>
+    <script src="category-product.js"></script>
 </body>
 </html>
 

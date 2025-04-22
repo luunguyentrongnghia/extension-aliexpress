@@ -23,7 +23,7 @@ async function refreshAccessToken() {
 
     return data.access;  // Trả về access token mới
 }
-chrome.runtime.onMessage.addListener(async(message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async(message, sender, sendResponse) => {   
     if (message.action === 'decodeToken') {
         try {
             const decoded=await refreshAccessToken(message.token);
@@ -36,3 +36,4 @@ chrome.runtime.onMessage.addListener(async(message, sender, sendResponse) => {
     }
     return true; // Đảm bảo phản hồi bất đồng bộ
 })
+
