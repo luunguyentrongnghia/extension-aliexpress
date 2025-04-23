@@ -5,24 +5,23 @@ let limit = 5;  // Số sản phẩm mỗi trang
 // Hàm gọi API và load dữ liệu sản phẩm
 async function fetchProducts(page) {
     const offset = (page - 1) * limit;
-    const { accessToken } = await chrome.storage.local.get('accessToken');
+    let { accessToken } = await chrome.storage.local.get('accessToken');
     if(isAccessTokenExpired(accessToken)){
-        await refreshAccessToken();
+        accessToken = await refreshAccessToken();
     }
     try {
         const response = await fetch(`http://127.0.0.1:8000/api/ex/product/?limit=${limit}&offset=${offset}`,{
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`  // Gửi access token trong header
+            'Authorization': `Bearer ${accessToken}` 
         }
         });
         const data = await response.json();
-        console.log('API Response:', data);
         if (data.products && data.products.length > 0) {
-            displayProducts(data.products);  // Hiển thị sản phẩm
-            totalPages = data.total_pages;  // Cập nhật tổng số trang
-            generatePageNumbers();  // Tạo danh sách số trang
+            displayProducts(data.products);  
+            totalPages = data.total_pages; 
+            generatePageNumbers();  
         }
 
         // Cập nhật trạng thái của các nút phân trang
@@ -38,8 +37,7 @@ function isAccessTokenExpired(token) {
         const currentTime = Date.now() / 1000;  // Thời gian hiện tại tính bằng giây (epoch)
         return decoded.exp < currentTime;  // Kiểm tra nếu token đã hết hạn
     } catch (error) {
-        console.error("Invalid token", error);
-        return true;  // Nếu token không hợp lệ, coi như đã hết hạn
+        return true;  
     }
 }
 async function refreshAccessToken() {
@@ -67,6 +65,33 @@ async function refreshAccessToken() {
 
     return data.access;  // Trả về access token mới
 }
+async function putProduct(productData,id) {
+    try {
+        const response = await fetch(`http://127.0.0.1:8000/api/ex/product/update/${id}/`, {
+            method: 'PUT',  // Hoặc PATCH nếu chỉ cập nhật một phần
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(productData),
+        });
+        if (response.ok) {
+            Toastify({
+                text: "Product updated successfully!",
+                backgroundColor: "green",
+            }).showToast();
+            return true
+        } else {
+            Toastify({
+                text: "Failed to update product",
+                backgroundColor: "red",
+            }).showToast();
+            return true
+        }
+    } catch (error) {
+        console.error('Error updating product:', error);
+        return true
+    }
+}
 function convertToHTML(rawString) {
     // Tạo một phần tử tạm thời để gán chuỗi vào
     const tempElement = document.createElement('div');
@@ -74,25 +99,6 @@ function convertToHTML(rawString) {
 
     // Trả về phần tử HTML đã được chuyển đổi
     return tempElement.innerHTML;  // Hoặc bạn có thể sử dụng tempElement.childNodes nếu cần.
-}
-async function fetchCategoryData() {
-    try {
-        const response = await fetch('http://127.0.0.1:8000/api/ex/category/tree/',{
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const data = await response.json();
-        window.categoryData = data;
-    } catch (error) {
-        console.error('Error fetching category data:', error);
-        throw error;  // Ném lỗi nếu có lỗi xảy ra
-    }
 }
 // Hiển thị các sản phẩm trong danh sách
 async function displayProducts(products) {
@@ -121,55 +127,6 @@ async function displayProducts(products) {
                             <label for="product-name" class="product-label">Product Name</label>
                             <input type="text" value="${product.title}" class="product-input">
                         </div>
-                         <div class="product-details">
-                            <label for="categorySelect" class="form-label">
-                                Category
-                            </label>
-                            <span class="text-muted" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-html="true"
-                                title="Some categories are invite-only and can't be selected.<br>
-                                        To add these categories, apply for access by sending your seller name, requested category, and shop code to your account manager."
-                                style="cursor: pointer;">
-                                <i class="ti ti-help-circle"></i>
-                            </span>
-                            <div class="input-group">
-                                <input type="hidden" id="categorySelect-${product.id}" name="categorySelect" value="" />
-                                <div id="fakeSelect-${product.id}" class="form-control select2" style="cursor: pointer; position: relative;">
-                                    <span id="fakeSelectText-${product.id}">Select a category</span>
-                                    <i class="ti ti-chevron-down"
-                                        style="position:absolute; right:8px; top:50%; transform:translateY(-50%);"></i>
-                                    <div id="megaMenu-${product.id}" class="mega-menu select2-dropdown"
-                                        style="display: none; position: absolute; top: 100%; left: 0; width: 100%;">
-                                        <div id="breadcrumbRow-${product.id}" class="breadcrumbRow p-2 border-bottom" style="background-color:#f8f8f8;">
-                                            <span id="breadcrumbText-${product.id}">All Categories</span>
-                                        </div>
-                                        <div class="position-relative" style="overflow:hidden;">
-                                            <button id="scrollLeftBtn-${product.id}" type="button"
-                                                    style="position:absolute; left:0; top:50%; transform:translateY(-50%); z-index:2;
-                                                        background-color:#fff; border:1px solid #ccc; border-radius:4px;
-                                                        display:none; cursor:pointer;">
-                                                ‹
-                                            </button>
-
-                                            <div id="columnsWrapper-${product.id}" class="d-flex" style="gap:1px; overflow-x:auto; scroll-behavior:smooth;">
-                                                <div id="colLevel1-${product.id}" class="category-column"></div>
-                                                <div id="colLevel2-${product.id}" class="category-column"></div>
-                                                <div id="colLevel3-${product.id}" class="category-column"></div>
-                                                <div id="colLevel4-${product.id}" class="category-column"></div>
-                                                <div id="colLevel4-${product.id}" class="category-column"></div>
-                                                <div id="colLevel5-${product.id}" class="category-column"></div>
-                                            </div>
-
-                                            <button id="scrollRightBtn-${product.id}" type="button"
-                                                    style="position:absolute; right:0; top:50%; transform:translateY(-50%); z-index:2;
-                                                        background-color:#fff; border:1px solid #ccc; border-radius:4px;
-                                                        display:none; cursor:pointer;">
-                                                ›
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -191,7 +148,7 @@ async function displayProducts(products) {
                         </thead>
                         <tbody>
                             ${product.skus.map(sku => `
-                                <tr>
+                                <tr data-sku-id="${sku.id}">
                                     <td><img src="${sku.uri}" alt="Variant Image" class="variant-image" /></td>
                                     <td>${sku.color}</td>
                                     <td>${sku.size}</td>
@@ -209,7 +166,7 @@ async function displayProducts(products) {
                         ${product.images.map(image => `
                             <div class="image-item">
                                 <label for="image${image.id}-${product.id}">
-                                    <img src="${image.uri}" alt="Image ${image.id}" class="variant-image">
+                                    <img src="${image.uri}" alt="Image ${image.id}" data-image-id="${image.id}"class="variant-image">
                                 </label>
                             </div>
                         `).join('')}
@@ -220,15 +177,17 @@ async function displayProducts(products) {
             <div class="product-actions">
                 <button class="action-button remove-button" data-product-id="${product.id}">Remove Product</button>
                 <div class="action-right">
-                    <button class="action-button">Save</button>
+                    <button id='save-btn-${product.id}' class="action-button" style="display:flex; align-items:center; gap:5px"><div class="spinner-border spinner-border-sm" role="status" style="display: none;"></div><div>Save</div></button>
                     <button class="action-button">Push To Store</button>
                 </div>
             </div>
         `;
         const removeButton = productElement.querySelector('.remove-button');
-        removeButton.addEventListener('click', () => {
+
+        removeButton.addEventListener('click',async () => {
             const productId = removeButton.getAttribute('data-product-id');
             deleteProduct(productId);
+          
         });
 
         // Thêm sản phẩm vào danh sách sản phẩm
@@ -254,7 +213,17 @@ async function displayProducts(products) {
             const converdata = convertToHTML(product.description);
             quill.clipboard.dangerouslyPasteHTML(converdata);
         }
-  
+        const loadingContainer = document.getElementById(`save-btn-${product.id}`).getElementsByClassName('spinner-border')[0];
+        document.getElementById(`save-btn-${product.id}`).addEventListener('click',async (e) => {
+            const productData = getProductData(productElement); 
+            loadingContainer.style.display = "block";
+            if(productData){
+                 const response=await putProduct(productData ,product.id)
+                if(response){
+                    loadingContainer.style.display = "none";
+                }
+            }
+        })
         }
 
         // Thêm sự kiện cho các tab
@@ -263,215 +232,51 @@ async function displayProducts(products) {
             document.querySelector(`#${tabName}-tab-${product.id}`).addEventListener("click", () => showTabProduct(tabName, productElement));
         });
     });
-    initializeCategorySelect()
+
 }
-function initializeCategorySelect() {
-    const categoryData = window.categoryData || [];
-    console.log(categoryData)
-    const productElements = document.querySelectorAll('.list-products > .products-container');
-    productElements.forEach(productElement => {
-        const productId = productElement.getAttribute('id-ctn-product');
-        const fakeSelect = document.getElementById(`fakeSelect-${productId}`);
-        const fakeSelectText = document.getElementById(`fakeSelectText-${productId}`);
-        const megaMenu = document.getElementById(`megaMenu-${productId}`);
-        const breadcrumbText = document.getElementById(`breadcrumbText-${productId}`);
 
-        const colLevel1 = document.getElementById(`colLevel1-${productId}`);
-        const colLevel2 = document.getElementById(`colLevel2-${productId}`);
-        const colLevel3 = document.getElementById(`colLevel3-${productId}`);
-        const colLevel4 = document.getElementById(`colLevel4-${productId}`);
-        const colLevel5 = document.getElementById(`colLevel5-${productId}`);
+function getProductData(productElement) {
+    const productId = productElement.getAttribute('id-ctn-product');
+    
+    // Lấy tên sản phẩm và mô tả từ các trường input
+    const productName = productElement.querySelector(`#product-${productId} .product-input`).value;
+    const productDescription = productElement.querySelector(`#editor-container-${productId} .ql-editor`).innerHTML;  // Quill editor lấy nội dung
+    
+    // Lấy các SKU
+    const skus = [];
+    const skuRows = productElement.querySelectorAll(`#variants-${productId} .variants-table tbody tr`);
+    skuRows.forEach(row => {
+        const sku = {
+            id: row.getAttribute('data-sku-id'), // Nếu có id SKU
+            color: row.querySelector('td:nth-child(2)').textContent,
+            size: row.querySelector('td:nth-child(3)').textContent,
+            price: row.querySelector('td:nth-child(4)').textContent,
+            list_price: row.querySelector('td:nth-child(5)').textContent,
+            currency: row.querySelector('td:nth-child(6)').textContent,
+        };
+        skus.push(sku);
+    });
 
-        const columnsWrapper = document.getElementById(`columnsWrapper-${productId}`);
-        const scrollLeftBtn = document.getElementById(`scrollLeftBtn-${productId}`);
-        const scrollRightBtn = document.getElementById(`scrollRightBtn-${productId}`);
+    // Lấy các hình ảnh
+    const images = [];
+    const imageElements = productElement.querySelectorAll(`#images-${productId} .image-item img`);
+    imageElements.forEach(image => {
+        images.push({
+            id: image.getAttribute('data-image-id'),  // Nếu có id hình ảnh
+            uri: image.src
+        });
+    });
 
-        const categorySelect = document.getElementById(`categorySelect-${productId}`);
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-          return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-        fakeSelect.addEventListener("click", function() {
-          // Cập nhật lại giá trị trong fakeSelect
-          const selectedCategory = fakeSelectText.textContent; // Lấy tên category đã chọn
-          categorySelect.value = selectedCategory; // Gán giá trị vào input ẩn
-        });
-        let currentPath = [];
-        // Hiện menu
-        function showMenu() {
-          megaMenu.style.display = "block";
-          // Reset các cột và breadcrumb
-          currentPath = [];
-          breadcrumbText.textContent = "All Categories";
-          renderLevel(colLevel1, categoryData.categories, 1);
-          colLevel2.innerHTML = "";
-          colLevel3.innerHTML = "";
-          colLevel4.innerHTML = "";
-          colLevel5.innerHTML = "";
-          updateScrollButtons();
-        }
-      
-        // Ẩn menu
-        function hideMenu() {
-          megaMenu.style.display = "none";
-        }
-      
-        // Toggle menu khi click vào fakeSelect
-        fakeSelect.addEventListener("click", function(e) {
-          e.stopPropagation();
-          if (megaMenu.style.display === "block") {
-            hideMenu();
-          } else {
-            showMenu();
-          }
-        });
-      
-        // Click ra ngoài fakeSelect ẩn menu
-        document.addEventListener("click", function(e) {
-          if (!fakeSelect.contains(e.target)) {
-            hideMenu();
-          }
-        });
-      
-        /**
-         * Hàm cuộn đến cột tương ứng (auto scroll)
-         * level: 1..5
-         */
-        function scrollToColumn(level) {
-          let target;
-          if (level === 3) target = colLevel1;
-          else if (level === 4) target = colLevel4;
-          else if (level === 5) target = colLevel5;
-      
-          if (target) {
-            // Cuộn columnsWrapper đến vị trí của target
-            columnsWrapper.scrollLeft = target.offsetLeft;
-          }
-        }
-      
-        // Hàm render danh mục theo cấp
-        function renderLevel(container, categories, level) {
-          container.innerHTML = "";
-          if (!categories || categories.length === 0) {
-            container.innerHTML = "<div class='text-muted'>No categories</div>";
-            return;
-          }
-          categories.forEach(cat => {
-            const div = document.createElement("div");
-            div.className = "category-item";
-            // Hiển thị tên, sử dụng key "local_name" hoặc "name" nếu có
-            div.textContent = cat.local_name || cat.name || "Category";
-      
-            if (cat.children && cat.children.length > 0) {
-              div.classList.add("has-children");
-            }
-      
-            div.addEventListener("click", function(ev) {
-              ev.stopPropagation();
-      
-              // Xóa class "selected" khỏi tất cả các phần tử cùng cột
-              const siblings = container.querySelectorAll(".category-item");
-              siblings.forEach(item => item.classList.remove("selected"));
-              div.classList.add("selected");
-      
-              // Cập nhật currentPath và reset nội dung của các cột bên phải tùy theo cấp
-              if (level === 1) {
-                colLevel2.innerHTML = "";
-                colLevel3.innerHTML = "";
-                colLevel4.innerHTML = "";
-                colLevel5.innerHTML = "";
-                currentPath = [cat.local_name || cat.name];
-              } else if (level === 2) {
-                colLevel3.innerHTML = "";
-                colLevel4.innerHTML = "";
-                colLevel5.innerHTML = "";
-                currentPath = [currentPath[0], cat.local_name || cat.name];
-              } else if (level === 3) {
-                colLevel4.innerHTML = "";
-                colLevel5.innerHTML = "";
-                currentPath = [currentPath[0], currentPath[1], cat.local_name || cat.name];
-              } else if (level === 4) {
-                colLevel5.innerHTML = "";
-                currentPath = [currentPath[0], currentPath[1], currentPath[2], cat.local_name || cat.name];
-              } else if (level === 5) {
-                currentPath[4] = cat.local_name || cat.name;
-              }
-      
-              // Cập nhật breadcrumb
-              breadcrumbText.textContent = "All Categories > " + currentPath.join(" > ");
-      
-              if (cat.children && cat.children.length > 0) {
-                // Nếu có children, render cột tiếp theo và tự động cuộn đến cột đó
-                if (level === 1) {
-                  renderLevel(colLevel2, cat.children, 2);
-                  scrollToColumn(2);
-                } else if (level === 2) {
-                  renderLevel(colLevel3, cat.children, 3);
-                  scrollToColumn(3);
-                } else if (level === 3) {
-                  renderLevel(colLevel4, cat.children, 4);
-                  scrollToColumn(4);  // Đảm bảo khi ở cột 3, cột 4 tự động cuộn vào view
-                } else if (level === 4) {
-                  renderLevel(colLevel5, cat.children, 5);
-                  scrollToColumn(5);
-                }
-                // Không cập nhật hidden input vì danh mục chưa phải leaf
-              } else {
-                // Nếu không có children => leaf category, cập nhật hidden input
-                // Ở sự kiện click của div category-item
-                fakeSelectText.textContent = currentPath.join(" > ");
-                categorySelect.value = String(cat.cat_id);
-                console.log(cat.cat_id)
-                categorySelect.dispatchEvent(new Event("change"));
-                hideMenu();
-              }
-      
-              updateScrollButtons();
-            });
-      
-      
-            container.appendChild(div);
-          });
-        }
-      
-        // Hàm cập nhật nút cuộn nếu cần
-        function updateScrollButtons() {
-          if (columnsWrapper.scrollWidth > columnsWrapper.clientWidth) {
-            scrollLeftBtn.style.display = (columnsWrapper.scrollLeft > 0) ? "inline-block" : "none";
-            scrollRightBtn.style.display = (columnsWrapper.scrollLeft + columnsWrapper.clientWidth < columnsWrapper.scrollWidth) ? "inline-block" : "none";
-          } else {
-            scrollLeftBtn.style.display = "none";
-            scrollRightBtn.style.display = "none";
-          }
-        }
-      
-        columnsWrapper.addEventListener("scroll", updateScrollButtons);
-      
-        scrollLeftBtn.addEventListener("click", function(e) {
-          e.stopPropagation();
-          columnsWrapper.scrollLeft -= 150;
-        });
-      
-        scrollRightBtn.addEventListener("click", function(e) {
-          e.stopPropagation();
-          columnsWrapper.scrollLeft += 150;
-        });
-      
-        // Get the error message container
-        // const categoryErrorMessage = document.querySelector(".text-danger");
-      
-        // // Listen for changes on the category select input (Select2)
-        // $(`#categorySelect-${productId}`).on('change', function() {
-        //   // If a valid value is selected, hide the error message
-        //   if (categorySelect.value) {
-        //     categoryErrorMessage.style.display = 'none';
-        //   } else {
-        //     // If no value is selected, show the error message
-        //     categoryErrorMessage.style.display = 'block';
-        //   }
-        // });
-    })
+    // Tạo đối tượng dữ liệu để gửi lên API
+    return {
+        id: productId,
+        title: productName,
+        description: productDescription,
+        skus: skus,
+        images: images
+    };
 }
+
 function showTabProduct(tabName, productElement) {
     const tabs = productElement.querySelectorAll('.tab');
     const contents = productElement.querySelectorAll('.tab-content');
@@ -506,7 +311,6 @@ function generatePageNumbers() {
     }
 }
 
-// Xử lý sự kiện khi nhấn vào các nút phân trang
 document.getElementById('prev-page').addEventListener('click', () => {
     if (currentPage > 1) {
         currentPage--;
@@ -524,7 +328,6 @@ document.getElementById('next-page').addEventListener('click', () => {
 // Tải sản phẩm khi trang được tải
 
 window.onload = () => {
-    fetchCategoryData()
     fetchProducts(currentPage)
 };
 
@@ -546,12 +349,21 @@ async function deleteProduct(productId) {
             if (productElement) {
                 productElement.remove();
             }
-            alert('Product removed successfully');
+            Toastify({
+                text: "Product removed successfully!",
+                backgroundColor: "green",
+            }).showToast();
         } else {
-            alert('Failed to delete the product');
+            Toastify({
+                text: "Failed to delete the product",
+                backgroundColor: "red",
+            }).showToast();
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('An error occurred while deleting the product');
+        Toastify({
+            text: "An error occurred while deleting the product",
+            backgroundColor: "red",
+        }).showToast();
     }
 }

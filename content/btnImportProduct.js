@@ -1,5 +1,6 @@
 let htmlTemplate = `<div class="import-button-container">
-    <button class="import-button">Import products</button>
+    <button class="import-button" style="display: flex; gap: 5px;">
+     <div class="spinner-border spinner-border-sm" role="status" style="display: none;"></div> <div>Import products</div></button>
 </div>`;
 let link = document.createElement("link");
 link.rel = "stylesheet";
@@ -16,6 +17,7 @@ window.onload = async() => {
         const importButton = wrapperObject.querySelector(".import-button");
         const { accessToken } = await chrome.storage.local.get('accessToken');
         const { refreshToken } = await chrome.storage.local.get('refreshToken');
+        const loadingContainer = wrapperObject.querySelector(".spinner-border");
         importButton.addEventListener("click", async() => {
             if (!refreshToken) {
                 alert(' Vui lòng đăng nhập.');
@@ -24,10 +26,18 @@ window.onload = async() => {
             if(isAccessTokenExpired(accessToken)){
                 await refreshAccessToken();
             }
-            const productData = await scrapeProductData();
-            console.log(productData);
-            await sendProductDataToAPI(productData);
-            alert('Thành công');
+            loadingContainer.style.display = "block";
+            try {
+                const productData = await scrapeProductData();
+                console.log(productData);
+                await sendProductDataToAPI(productData);
+                alert('Thành công');
+            } catch (error) {
+                console.error('Error importing products:', error);
+                alert('Đã xảy ra lỗi.');
+            } finally {
+                loadingContainer.style.display = "none";
+            }
         });
     }
 };
