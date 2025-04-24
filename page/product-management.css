@@ -471,3 +471,12 @@ footer {
 }
 
 
+.save-btn-loading{
+    opacity: 0.5;
+    pointer-events: none;
+    cursor:no-drop;
+}
+.remove-button-loading{
+    pointer-events: none;
+    cursor:no-drop;
+}

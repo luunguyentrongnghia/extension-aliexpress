@@ -152,8 +152,8 @@ async function displayProducts(products) {
                                     <td><img src="${sku.uri}" alt="Variant Image" class="variant-image" /></td>
                                     <td>${sku.color}</td>
                                     <td>${sku.size}</td>
-                                    <td>${sku.price}</td>
-                                    <td>${sku.list_price}</td>
+                                    <td><input type="number" value="${sku.price}" class="sku-price" data-sku-id="${sku.id}" /></td>
+                                    <td><input type="number" value="${sku.list_price}" class="sku-list-price" data-sku-id="${sku.id}" /></td>
                                     <td>${sku.currency}</td>
                                 </tr>
                             `).join('')}
@@ -175,18 +175,18 @@ async function displayProducts(products) {
                 
             </div>
             <div class="product-actions">
-                <button class="action-button remove-button" data-product-id="${product.id}">Remove Product</button>
-                <div class="action-right">
-                    <button id='save-btn-${product.id}' class="action-button" style="display:flex; align-items:center; gap:5px"><div class="spinner-border spinner-border-sm" role="status" style="display: none;"></div><div>Save</div></button>
-                    <button class="action-button">Push To Store</button>
-                </div>
+                <button class="action-button remove-button" data-product-id="${product.id}"style="display:flex; align-items:center; gap:5px"><div class="spinner-border spinner-border-sm" role="status" style="display: none;"></div><div>Remove Product</div></button>
+                <button id='save-btn-${product.id}' class="action-button" style="display:flex; align-items:center; gap:5px"><div class="spinner-border spinner-border-sm" role="status" style="display: none;"></div><div>Save</div></button>
             </div>
         `;
         const removeButton = productElement.querySelector('.remove-button');
-
+        const loadingRemove = removeButton.querySelector('.spinner-border');                  
         removeButton.addEventListener('click',async () => {
             const productId = removeButton.getAttribute('data-product-id');
-            deleteProduct(productId);
+            removeButton.classList.add('remove-button-loading')
+            loadingRemove.style.display = "block";
+            await deleteProduct(productId);
+
           
         });
 
@@ -213,14 +213,18 @@ async function displayProducts(products) {
             const converdata = convertToHTML(product.description);
             quill.clipboard.dangerouslyPasteHTML(converdata);
         }
-        const loadingContainer = document.getElementById(`save-btn-${product.id}`).getElementsByClassName('spinner-border')[0];
+        const btnsave = document.getElementById(`save-btn-${product.id}`);
+        const loadingContainer = btnsave.querySelector('.spinner-border');
         document.getElementById(`save-btn-${product.id}`).addEventListener('click',async (e) => {
-            const productData = getProductData(productElement); 
+            const productData = getProductData(productElement);
+            console.log(productData);
+            btnsave.classList.add('save-btn-loading')
             loadingContainer.style.display = "block";
             if(productData){
                  const response=await putProduct(productData ,product.id)
                 if(response){
                     loadingContainer.style.display = "none";
+                    btnsave.classList.remove('save-btn-loading')
                 }
             }
         })
@@ -248,23 +252,10 @@ function getProductData(productElement) {
     skuRows.forEach(row => {
         const sku = {
             id: row.getAttribute('data-sku-id'), // Nếu có id SKU
-            color: row.querySelector('td:nth-child(2)').textContent,
-            size: row.querySelector('td:nth-child(3)').textContent,
-            price: row.querySelector('td:nth-child(4)').textContent,
-            list_price: row.querySelector('td:nth-child(5)').textContent,
-            currency: row.querySelector('td:nth-child(6)').textContent,
+            price: row.querySelector('td:nth-child(4) input').value,
+            list_price: row.querySelector('td:nth-child(5) input').value,
         };
         skus.push(sku);
-    });
-
-    // Lấy các hình ảnh
-    const images = [];
-    const imageElements = productElement.querySelectorAll(`#images-${productId} .image-item img`);
-    imageElements.forEach(image => {
-        images.push({
-            id: image.getAttribute('data-image-id'),  // Nếu có id hình ảnh
-            uri: image.src
-        });
     });
 
     // Tạo đối tượng dữ liệu để gửi lên API
@@ -273,7 +264,6 @@ function getProductData(productElement) {
         title: productName,
         description: productDescription,
         skus: skus,
-        images: images
     };
 }
 

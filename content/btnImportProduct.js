@@ -26,10 +26,11 @@ window.onload = async() => {
             if(isAccessTokenExpired(accessToken)){
                 await refreshAccessToken();
             }
+            importButton.classList.add('loading')
             loadingContainer.style.display = "block";
             try {
                 const productData = await scrapeProductData();
-                console.log(productData);
+                console.log(productData)
                 await sendProductDataToAPI(productData);
                 alert('Thành công');
             } catch (error) {
@@ -37,6 +38,7 @@ window.onload = async() => {
                 alert('Đã xảy ra lỗi.');
             } finally {
                 loadingContainer.style.display = "none";
+                importButton.classList.remove('loading')
             }
         });
     }

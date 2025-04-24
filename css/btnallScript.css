@@ -20,3 +20,8 @@
 .import-button:hover {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);  /* Bóng đổ khi hover */
 }
+.import-button.loading {
+    opacity: 0.5; 
+    pointer-events: none; 
+    cursor:no-drop; 
+}
