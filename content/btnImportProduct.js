@@ -30,8 +30,7 @@ window.onload = async() => {
             loadingContainer.style.display = "block";
             try {
                 const productData = await scrapeProductData();
-                console.log(productData)
-                await sendProductDataToAPI(productData);
+                // await sendProductDataToAPI(productData);
                 alert('Thành công');
             } catch (error) {
                 console.error('Error importing products:', error);
