@@ -30,7 +30,7 @@ window.onload = async() => {
             loadingContainer.style.display = "block";
             try {
                 const productData = await scrapeProductData();
-                // await sendProductDataToAPI(productData);
+                await sendProductDataToAPI(productData);
                 alert('Thành công');
             } catch (error) {
                 console.error('Error importing products:', error);
@@ -44,6 +44,16 @@ window.onload = async() => {
 };
 
 
+function cartesian(arrays) {
+  return arrays.reduce((a, b) =>
+    a.flatMap(x => b.map(y => x.concat(y))),
+    [[]]
+  );
+}
+// 2. helper: chờ trang update giá
+function wait(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
 async function scrapeProductData() {
     let titleProduct
     let thumbnailImages = []
@@ -53,11 +63,7 @@ async function scrapeProductData() {
     const pdprightWrap = document.querySelector('.pdp-info-right');
     const ctnDescription = document.querySelector('[data-pl="product-description"]');
     if(ctnDescription){
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML= ctnDescription.innerHTML
-        const scripts = tempDiv.querySelectorAll('script');
-        scripts.forEach(script => script.remove());
-        description = tempDiv.innerHTML
+        description = ctnDescription.innerHTML
     }
     if (pdpLeftWrap) {
         const thumbnailImg = pdpLeftWrap.querySelectorAll('[class^="slider--img"]');
@@ -69,50 +75,52 @@ async function scrapeProductData() {
         }
     }
     if(pdprightWrap){
-        const ctnVariants = pdprightWrap.querySelector('[class^="extend--wrap"]');
-        const ItemVariants = ctnVariants.querySelectorAll('[class*="sku-item--image"]');
+        const ctnVariants = pdprightWrap.querySelector('[class^="sku-item--wrap"]');
         titleProduct = pdprightWrap.querySelector('[class^="title--wrap"]').textContent
-        for (let index = 0; index < ItemVariants.length; index++) {
-            const item = ItemVariants[index];
-            await new Promise(resolve => {
-                item.click()
-                setTimeout(() => {
-                    const ctn_list_price = pdprightWrap.querySelector('[class^="price--originalText"]');
-                    let list_price=''
-                    let price=''
-                    if(ctn_list_price){
-                        price = pdprightWrap.querySelector('[class^="price--currentPriceText"]').textContent;
-                        list_price = ctn_list_price.textContent
-                    }else{
-                        price = pdprightWrap.querySelector('[class^="price--currentPriceText"]').textContent;
-                        list_price = price
-                    }
-                    price = price.replace('$', '').trim();
-                    list_price = list_price.replace('$', '').trim();
-                    price = parseFloat(price);
-                    list_price = parseFloat(list_price);
-                    const color = pdprightWrap.querySelector('[class^="sku-item--title"] span span').textContent;
-                    let imgVariant = item.querySelector('img').src;
-                    let ctnSizeVariant =pdprightWrap.querySelectorAll('[class^="sku-item--box"]  [class*="sku-item--text"]');
-                    let sizeVariants = []
-                    if(ctnSizeVariant){
-                        ctnSizeVariant.forEach(ctnSize => {
-                            sizeVariants.push(ctnSize.textContent)
-                        })
-                    }
-                    // Đẩy dữ liệu vào mảng
-                    variantsData.push({
-                        img: imgVariant,
-                        price: price ? price: 'N/A',
-                        list_price: list_price ? list_price : 'N/A',
-                        color: color ? color.trim() : 'N/A',
-                        size: sizeVariants
-                    });
-                    
-                    resolve(); 
-                })
-            }, 1000 * index)
+       if(ctnVariants){
+         const propContainers = Array.from(
+            ctnVariants.querySelectorAll('[class^="sku-item--property"]')
+        );
+        const groups = propContainers.map(prop => {
+        // Tên nhóm: bỏ dấu ", :, whitespace
+        const titleSpan = prop.querySelector('[class^="sku-item--title"] > span');
+        const raw = titleSpan.childNodes[0].textContent;
+        const name = raw.replace(/["]/g,'').replace(':','').trim().toLowerCase();
+
+        // Mảng các option
+        const items = Array.from(
+            prop.querySelectorAll('[class^="sku-item--skus"] > div')
+        );
+        return { name, items,propElem: prop };
+        });
+        const combos = cartesian(groups.map(g => g.items));
+        for (const combo of combos) {
+        // 5.1. Bỏ chọn hết (nếu cần)
+        groups.forEach(g => g.items.forEach(i => i.classList.remove('active')));
+
+        // 5.2. Click lần lượt từng option
+        combo.forEach(i => i.click());
+
+        // 5.3. Chờ giá update
+        await wait(500);
+
+        // 5.4. Đọc giá mới
+        const priceEl = pdprightWrap.querySelector('.product-price');
+        const price = priceEl 
+            ? parseFloat(priceEl.textContent.replace(/[^\d.]/g, '')) 
+            : null;
+        const list_price =parseFloat(pdprightWrap.querySelector('[class^="price--originalText"]').textContent.replace(/[^\d.]/g, ''));
+        // 5.5. Build record variant
+        const rec = { price , list_price };
+        groups.forEach(({ name, propElem }) => {
+        // mỗi propElem.querySelector(...) luôn cho giá trị đang chọn
+        const sel = propElem.querySelector('[class^="sku-item--title"] > span span');
+        rec[name] = sel ? sel.textContent.trim() : null;
+        });
+
+        variantsData.push(rec);
         }
+       }
     }
     return {
         title : titleProduct,
