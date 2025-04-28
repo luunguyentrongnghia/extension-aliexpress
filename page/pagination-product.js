@@ -104,11 +104,16 @@ function convertToHTML(rawString) {
 async function displayProducts(products) {
     const productListContainer = document.querySelector('.list-products');
     productListContainer.innerHTML = '';  // Xóa danh sách sản phẩm cũ
+    console.log(products);
 
     products.forEach(product => {
         const productElement = document.createElement('div');
         productElement.classList.add('products-container');
         productElement.setAttribute('id-ctn-product', product.id);
+        const optionNames = product.options.map(opt =>
+            opt.name.charAt(0).toUpperCase() + opt.name.slice(1)
+          );
+          const headers = [...optionNames, 'Price', 'List price', 'Currency'];
         productElement.innerHTML = `
             <div class="tabs">
                 <div id="product-tab-${product.id}" class="tab active">Product</div>
@@ -137,27 +142,34 @@ async function displayProducts(products) {
                 <div id="variants-${product.id}" class="tab-content">
                     <table class="variants-table">
                         <thead>
-                            <tr>   
-                                <th>Image</th>
-                                <th>Color</th>
-                                <th>Size</th>
-                                <th>Price</th>
-                                <th>List price</th>
-                                <th>Currency</th>
-                            </tr>
+                        <tr>
+                            ${headers.map(h => `<th>${h}</th>`).join('')}
+                        </tr>
                         </thead>
                         <tbody>
-                            ${product.skus.map(sku => `
-                                <tr data-sku-id="${sku.id}">
-                                    <td><img src="${sku.uri}" alt="Variant Image" class="variant-image" /></td>
-                                    <td>${sku.color}</td>
-                                    <td>${sku.size}</td>
-                                    <td><input type="number" value="${sku.price}" class="sku-price" data-sku-id="${sku.id}" /></td>
-                                    <td><input type="number" value="${sku.list_price}" class="sku-list-price" data-sku-id="${sku.id}" /></td>
-                                    <td>${sku.currency}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
+                         ${product.variants.map(variant => {
+                            // 3a. Các ô thuộc tính động
+                            const attrCells = optionNames.map(name => {
+                            const found = variant.option_values.find(v =>
+                                v.option_name.charAt(0).toUpperCase() + v.option_name.slice(1) === name
+                            );
+                            return `<td>${found?.value || ''}</td>`;
+                            }).join('');
+
+                            // 3b. Các ô price / list_price / currency
+                            const priceCell = `<td><input type="number" value="${variant.price}" class="sku-price" data-variant-id="${variant.id}"/></td>`;
+                            const listCell  = `<td><input type="number" value="${variant.list_price||''}" class="sku-list-price" data-variant-id="${variant.id}"/></td>`;
+                            const currCell  = `<td>${variant.currency}</td>`;
+
+                            return `
+                            <tr data-variant-id="${variant.id}">
+                            ${attrCells}
+                            ${priceCell}
+                            ${listCell}
+                            ${currCell}
+                            </tr>`;
+                        }).join('')}
+                         </tbody>
                     </table>
                 </div>
 
@@ -242,30 +254,54 @@ async function displayProducts(products) {
 function getProductData(productElement) {
     const productId = productElement.getAttribute('id-ctn-product');
     
-    // Lấy tên sản phẩm và mô tả từ các trường input
-    const productName = productElement.querySelector(`#product-${productId} .product-input`).value;
-    const productDescription = productElement.querySelector(`#editor-container-${productId} .ql-editor`).innerHTML;  // Quill editor lấy nội dung
-    
-    // Lấy các SKU
-    const skus = [];
-    const skuRows = productElement.querySelectorAll(`#variants-${productId} .variants-table tbody tr`);
-    skuRows.forEach(row => {
-        const sku = {
-            id: row.getAttribute('data-sku-id'), // Nếu có id SKU
-            price: row.querySelector('td:nth-child(4) input').value,
-            list_price: row.querySelector('td:nth-child(5) input').value,
-        };
-        skus.push(sku);
+    // 1. Lấy tên và mô tả
+    const productName = productElement
+      .querySelector(`#product-${productId} .product-input`)
+      .value;
+    const productDescription = productElement
+      .querySelector(`#editor-container-${productId} .ql-editor`)
+      .innerHTML;
+  
+    // 2. Chuẩn bị header từ bảng variants
+    const table = productElement.querySelector(`#variants-${productId} .variants-table`);
+    const headers = Array.from(table.querySelectorAll('thead th')).map(th =>
+      th.textContent.trim().toLowerCase().replace(/\s+/g, '_')
+    );
+    // e.g. ['color','size','price','list_price','currency']
+  
+    // 3. Duyệt rows để build variants
+    const variants = Array.from(
+      table.querySelectorAll('tbody tr')
+    ).map(row => {
+      const data = {};
+      // nếu bạn có data-variant-id
+      const variantId = row.getAttribute('data-variant-id');
+      if (variantId) data.id = variantId;
+  
+      Array.from(row.children).forEach((cell, i) => {
+        const key = headers[i];
+        if (key === 'price' || key === 'list_price') {
+          const input = cell.querySelector('input');
+          data[key] = input ? input.value : null;
+        } else if (key === 'currency') {
+          data[key] = cell.textContent.trim();
+        } else {
+          // key là tên thuộc tính động như 'color', 'size', ...
+          data[key] = cell.textContent.trim();
+        }
+      });
+  
+      return data;
     });
-
-    // Tạo đối tượng dữ liệu để gửi lên API
+  
+    // 4. Trả về đối tượng cuối cùng
     return {
-        id: productId,
-        title: productName,
-        description: productDescription,
-        skus: skus,
+      id: productId,
+      title: productName,
+      description: productDescription,
+      variants: variants
     };
-}
+  }
 
 function showTabProduct(tabName, productElement) {
     const tabs = productElement.querySelectorAll('.tab');
