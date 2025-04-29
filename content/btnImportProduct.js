@@ -30,10 +30,10 @@ window.onload = async() => {
             loadingContainer.style.display = "block";
             try {
                 const productData = await scrapeProductData();
-                // const result=await sendProductDataToAPI(productData);
-                // if(result){
-                // }
-                alert('Thành công.');
+                const result=await sendProductDataToAPI(productData);
+                if(result){
+                  alert('Thành công.');
+                }
             } catch (error) {
                 console.error('Error importing products:', error);
                 alert('Đã xảy ra lỗi.');
@@ -98,7 +98,6 @@ async function scrapeProductData() {
             ctnVariants.querySelectorAll('[class^="sku-item--property"]')
         );
         const groups = propContainers.map(prop => {
-        // Tên nhóm: bỏ dấu ", :, whitespace
         const titleSpan = prop.querySelector('[class^="sku-item--title"] > span');
         const raw = titleSpan.childNodes[0].textContent;
         const name = raw.replace(/["]/g,'').replace(':','').trim().toLowerCase();
@@ -112,11 +111,11 @@ async function scrapeProductData() {
         const combos = cartesian(groups.map(g => g.items));
         for (const combo of combos) {
         groups.forEach(g => g.items.forEach(i => i.classList.remove('active')));
+        for (const optionElem of combo) {
+          optionElem.click();
+          await wait(1500);
+        }
 
-        // 5.2. Click lần lượt từng option
-        combo.forEach(i => i.click());
-
-        // 5.3. Chờ giá update
         await wait(500);
 
         // 5.4. Đọc giá mới
