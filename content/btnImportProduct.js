@@ -10,10 +10,7 @@ window.onload = async() => {
     const wrapperObject = document.querySelector("#root");
     
     if (wrapperObject !== null) {
-        // Sử dụng insertAdjacentHTML để thêm HTML vào cuối phần tử một cách an toàn
         wrapperObject.insertAdjacentHTML('beforeend', htmlTemplate);
-        
-        // Lắng nghe sự kiện click để thực hiện logic lấy dữ liệu sản phẩm
         const importButton = wrapperObject.querySelector(".import-button");
         const { accessToken } = await chrome.storage.local.get('accessToken');
         const { refreshToken } = await chrome.storage.local.get('refreshToken');
@@ -52,14 +49,12 @@ function cartesian(arrays) {
     [[]]
   );
 }
-// 2. helper: chờ trang update giá
 function wait(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 const checkRecaptcha = () => {
     const iframe = document.querySelector('iframe[title="reCAPTCHA"]');
     if (!iframe) return null;
-    // parse sitekey từ src
     try {
       const url = new URL(iframe.src);
       const sitekey = new URLSearchParams(url.search).get('k');
@@ -78,6 +73,10 @@ async function scrapeProductData() {
     const pdpLeftWrap = document.querySelector('.pdp-info-left');
     const pdprightWrap = document.querySelector('.pdp-info-right');
     const ctnDescription = document.querySelector('[data-pl="product-description"]');
+    const divCurrency = document.querySelector('[class^="ship-to--text"]');
+    const currency = divCurrency
+    ? divCurrency.querySelector('b').textContent.trim()
+    : null;
     if(ctnDescription){
         description = ctnDescription.innerHTML
     }
@@ -101,8 +100,6 @@ async function scrapeProductData() {
         const titleSpan = prop.querySelector('[class^="sku-item--title"] > span');
         const raw = titleSpan.childNodes[0].textContent;
         const name = raw.replace(/["]/g,'').replace(':','').trim().toLowerCase();
-
-        // Mảng các option
         const items = Array.from(
             prop.querySelectorAll('[class^="sku-item--skus"] > div')
         );
@@ -113,12 +110,10 @@ async function scrapeProductData() {
         groups.forEach(g => g.items.forEach(i => i.classList.remove('active')));
         for (const optionElem of combo) {
           optionElem.click();
-          await wait(1500);
+          // await wait(500);
         }
 
         await wait(500);
-
-        // 5.4. Đọc giá mới
         const priceEl = pdprightWrap.querySelector('.product-price');
         const price = priceEl 
             ? parseFloat(priceEl.textContent.replace(/[^\d.]/g, '')) 
@@ -127,10 +122,8 @@ async function scrapeProductData() {
         const list_price = listEl
               ? parseFloat(listEl.textContent.replace(/[^\d.]/g, ''))
               : price;
-        // 5.5. Build record variant
-        const rec = { price ,  list_price};
+        const rec = { price ,  list_price,currency};
         groups.forEach(({ name, propElem }) => {
-        // mỗi propElem.querySelector(...) luôn cho giá trị đang chọn
         const sel = propElem.querySelector('[class^="sku-item--title"] > span span');
         rec[name] = sel ? sel.textContent.trim() : null;
         });
@@ -149,6 +142,7 @@ async function scrapeProductData() {
         variantsData.push({
                 price,
                 list_price,
+                currency
               });
        }
     }
@@ -165,7 +159,7 @@ async function sendProductDataToAPI(productData) {
 
     try {
         const response = await fetch(url, {
-            method: 'POST', // Phương thức gửi dữ liệu
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json', 
                 'Authorization': `Bearer ${accessToken.accessToken}`, 
@@ -184,19 +178,18 @@ async function sendProductDataToAPI(productData) {
 }
 function isAccessTokenExpired(token) {
     try {
-        const decoded = jwt_decode(token);  // Giải mã token
-        const currentTime = Date.now() / 1000;  // Thời gian hiện tại tính bằng giây (epoch)
-        return decoded.exp < currentTime;  // Kiểm tra nếu token đã hết hạn
+        const decoded = jwt_decode(token); 
+        const currentTime = Date.now() / 1000; 
+        return decoded.exp < currentTime;  
     } catch (error) {
         console.error("Invalid token", error);
-        return true;  // Nếu token không hợp lệ, coi như đã hết hạn
+        return true; 
     }
 }
-// Hàm làm mới access token sử dụng refresh token
 async function refreshAccessToken() {
-    const { refreshToken } = await chrome.storage.local.get('refreshToken');  // Lấy refresh token từ storage
+    const { refreshToken } = await chrome.storage.local.get('refreshToken');
 
-    const response = await fetch('http://localhost:8000/api/token/refresh/', {  // Gọi API refresh token
+    const response = await fetch('http://localhost:8000/api/token/refresh/', {  
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -216,7 +209,7 @@ async function refreshAccessToken() {
         refreshToken: data.refresh
     });
 
-    return data.access;  // Trả về access token mới
+    return data.access;
 }
 const CLIENT_KEY = 'next_d8318c222f2d5e42ea4bcaf0f205a6ec1d';
 const SITEKEY    = '6LcSZ0wpAAAAAFfD';
@@ -251,49 +244,6 @@ async function createTask() {
       if (json.status === 'ready') {
         return json.solution.gRecaptchaResponse;
       }
-      // nếu status là "processing", loop tiếp
     }
   }
-  async function solveAndSubmit() {
-    try {
-      const taskId = await createTask();
-      console.log('NextCaptcha taskId:', taskId);
-  
-      const token = await getResult(taskId);
-      console.log('NextCaptcha giải xong, token:', token);
-  
-      // Inject token vào textarea reCAPTCHA v2
-      const ta = document.querySelector('textarea[name="g-recaptcha-response"]');
-      if (ta) ta.value = token;
-  
-      // Submit form (hoặc gọi callback nếu site yêu cầu)
-      document.querySelector('form').submit();
-    } catch (err) {
-      console.error(err);
-    }
-  }
-// 2. Tạo observer
-const observer = new MutationObserver(async mutations => {
-  for (const m of mutations) {
-    // a) Node mới được thêm
-    if (m.type === 'childList') {
-      for (const node of m.addedNodes) {
-        if (!(node instanceof HTMLElement)) continue;
-        if (node.matches('div.baxia-dialog.auto')) {
-            await wait(1000);
-            solveAndSubmit();
-            console.log('có capcha')
-        }
-      }
-    }
 
-  }
-});
-
-// 3. Khởi động observer trên <body>
-observer.observe(document.body, {
-  childList: true,
-  subtree: true,
-  attributes: true,           // theo dõi luôn attribute trên body (để detect dialog có sẵn)
-  attributeFilter: ['style']
-});
