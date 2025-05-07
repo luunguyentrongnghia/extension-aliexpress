@@ -122,7 +122,9 @@ async function scrapeProductData() {
         const list_price = listEl
               ? parseFloat(listEl.textContent.replace(/[^\d.]/g, ''))
               : price;
-        const rec = { price ,  list_price,currency};
+        const ctnquantity = document.querySelector('[class^="quantity--info"] span');
+        const quantity = ctnquantity ? Number(ctnquantity.textContent.match(/\d+/)) : 1;
+        const rec = { price ,  list_price,currency,quantity};
         groups.forEach(({ name, propElem }) => {
         const sel = propElem.querySelector('[class^="sku-item--title"] > span span');
         rec[name] = sel ? sel.textContent.trim() : null;
@@ -139,10 +141,13 @@ async function scrapeProductData() {
         const list_price = listEl
               ? parseFloat(listEl.textContent.replace(/[^\d.]/g, ''))
               : price;
+        const ctnquantity = document.querySelector('[class^="quantity--info"] span');
+        const quantity = ctnquantity ? Number(ctnquantity.textContent.match(/\d+/)) : 1;
         variantsData.push({
                 price,
                 list_price,
-                currency
+                currency,
+                quantity
               });
        }
     }
