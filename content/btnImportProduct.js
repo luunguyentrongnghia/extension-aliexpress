@@ -27,10 +27,11 @@ window.onload = async() => {
             loadingContainer.style.display = "block";
             try {
                 const productData = await scrapeProductData();
-                const result=await sendProductDataToAPI(productData);
-                if(result){
-                  alert('Thành công.');
-                }
+                console.log(productData);
+                // const result=await sendProductDataToAPI(productData);
+                // if(result){
+                //   alert('Thành công.');
+                // }
             } catch (error) {
                 console.error('Error importing products:', error);
                 alert('Đã xảy ra lỗi.');
@@ -63,6 +64,39 @@ const checkRecaptcha = () => {
       return null;
     }
   };
+  async function downloadImage(url) {
+    const response = await fetch(url);
+    const blob = await response.blob(); // Chuyển hình ảnh thành Blob
+    return blob;
+}
+function convertImageToJPEG(blob) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(blob);
+  
+      img.onload = function() {
+        // Tạo canvas để vẽ ảnh
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+  
+        // Chuyển đổi ảnh sang JPEG
+        canvas.toBlob((newBlob) => {
+          resolve(newBlob);
+          URL.revokeObjectURL(url);  // Dọn dẹp URL blob
+        }, 'image/jpeg');  // Hoặc 'image/png' nếu bạn muốn
+      };
+  
+      img.onerror = function() {
+        reject('Image conversion failed');
+        URL.revokeObjectURL(url);  // Dọn dẹp URL blob
+      };
+  
+      img.src = url;
+    });
+  }
 async function scrapeProductData() {
     let titleProduct
     let thumbnailImages = []
@@ -83,10 +117,24 @@ async function scrapeProductData() {
     if (pdpLeftWrap) {
         const thumbnailImg = pdpLeftWrap.querySelectorAll('[class^="slider--img"]');
         if(thumbnailImg){
-            thumbnailImg.forEach(ctnimg => {
-                const imgSrc = ctnimg.querySelector('img').src;
-                thumbnailImages.push(imgSrc)
-            });
+            for (const ctnimg of thumbnailImg) {
+                ctnimg.click();
+                await wait(500);
+                const imgSrc = document.querySelector('[class^="magnifier--image"]').src;
+                console.log(imgSrc);
+                // try {
+                //   const imageBlob = await downloadImage(imgSrc);  
+                //   const response = await uploadImageToTikTok(imageBlob); 
+                //   // Kiểm tra nếu có URI hợp lệ và thêm vào mảng thumbnailImages
+                //   if (response && response.url) {
+                //     thumbnailImages.push(response.uri);
+                //   } else {
+                //     console.error('Failed to upload image');
+                //   }
+                // } catch (error) {
+                //   console.error('Error uploading image:', error);
+                // }
+              }
         }
     }
     if(pdprightWrap){
@@ -158,6 +206,17 @@ async function scrapeProductData() {
         variants : variantsData
     }
 }
+ async function uploadImageToTikTok(file, use_case = 'MAIN_IMAGE') {
+    const convertedImage = await convertImageToJPEG(file);
+    const formData = new FormData();
+    formData.append('data', convertedImage);  // Gửi file dưới dạng dữ liệu
+    formData.append('use_case', use_case);  // Cung cấp trường use_case (ví dụ: MAIN_IMAGE)
+  
+    return fetch('http://127.0.0.1:8000/app/ecommerce/products/upload_image_to_tiktok/', {
+      method: 'POST',
+      body: formData
+    }).then(r => r.json());
+  }
 async function sendProductDataToAPI(productData) {
     const accessToken = await chrome.storage.local.get('accessToken'); 
     const url = 'http://127.0.0.1:8000/api/ex/product/'; 
