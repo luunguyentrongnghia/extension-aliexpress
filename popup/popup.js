@@ -65,13 +65,11 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
                 'password': password
             })
         });
-        console.log(response);
         if (!response.ok) {
             throw new Error('Invalid credentials');
         }
 
         const data = await response.json();
-        console.log(data);
         await chrome.storage.local.set({
             accessToken: data.access,
             refreshToken: data.refresh

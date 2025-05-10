@@ -9,7 +9,6 @@ link.type = "text/css";
 link.href = chrome.runtime.getURL('css/btnallScript.css');
 window.onload = async() => {
     const wrapperObject = document.querySelector("#root");
-    console.log(wrapperObject);
     
     if (wrapperObject !== null) {
         wrapperObject.insertAdjacentHTML('beforeend', htmlTemplate);
