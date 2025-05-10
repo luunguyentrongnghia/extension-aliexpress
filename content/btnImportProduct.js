@@ -6,6 +6,8 @@ let link = document.createElement("link");
 link.rel = "stylesheet";
 link.type = "text/css";
 link.href = chrome.runtime.getURL('css/btnallScript.css');
+const manifest = chrome.runtime.getManifest();
+const apiUrl = manifest.api_url;
 window.onload = async() => {
     const wrapperObject = document.querySelector("#root");
     
@@ -27,11 +29,10 @@ window.onload = async() => {
             loadingContainer.style.display = "block";
             try {
                 const productData = await scrapeProductData();
-                console.log(productData);
-                // const result=await sendProductDataToAPI(productData);
-                // if(result){
-                //   alert('Thành công.');
-                // }
+                const result=await sendProductDataToAPI(productData);
+                if(result){
+                  alert('Thành công.');
+                }
             } catch (error) {
                 console.error('Error importing products:', error);
                 alert('Đã xảy ra lỗi.');
@@ -66,7 +67,7 @@ const checkRecaptcha = () => {
   };
   async function downloadImage(url) {
     const response = await fetch(url);
-    const blob = await response.blob(); // Chuyển hình ảnh thành Blob
+    const blob = await response.blob();
     return blob;
 }
 function convertImageToJPEG(blob) {
@@ -75,33 +76,34 @@ function convertImageToJPEG(blob) {
       const url = URL.createObjectURL(blob);
   
       img.onload = function() {
-        // Tạo canvas để vẽ ảnh
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         canvas.width = img.width;
         canvas.height = img.height;
         ctx.drawImage(img, 0, 0);
-  
-        // Chuyển đổi ảnh sang JPEG
         canvas.toBlob((newBlob) => {
           resolve(newBlob);
-          URL.revokeObjectURL(url);  // Dọn dẹp URL blob
-        }, 'image/jpeg');  // Hoặc 'image/png' nếu bạn muốn
+          URL.revokeObjectURL(url); 
+        }, 'image/jpeg'); 
       };
   
       img.onerror = function() {
         reject('Image conversion failed');
-        URL.revokeObjectURL(url);  // Dọn dẹp URL blob
+        URL.revokeObjectURL(url);
       };
   
       img.src = url;
     });
   }
+function modifyImageUrl(url) {
+    return url.replace(/(\d+)x(\d+)/, '960x960');
+}
 async function scrapeProductData() {
     let titleProduct
     let thumbnailImages = []
     let variantsData = [];
     let description;
+    let avatar_product
     window.scrollTo(0, document.documentElement.scrollHeight);
     await wait(1000);
     const pdpLeftWrap = document.querySelector('.pdp-info-left');
@@ -116,24 +118,22 @@ async function scrapeProductData() {
     }
     if (pdpLeftWrap) {
         const thumbnailImg = pdpLeftWrap.querySelectorAll('[class^="slider--img"]');
+        avatar_product = thumbnailImg[0].querySelector('img').getAttribute('src');
         if(thumbnailImg){
             for (const ctnimg of thumbnailImg) {
-                ctnimg.click();
-                await wait(500);
-                const imgSrc = document.querySelector('[class^="magnifier--image"]').src;
-                console.log(imgSrc);
-                // try {
-                //   const imageBlob = await downloadImage(imgSrc);  
-                //   const response = await uploadImageToTikTok(imageBlob); 
-                //   // Kiểm tra nếu có URI hợp lệ và thêm vào mảng thumbnailImages
-                //   if (response && response.url) {
-                //     thumbnailImages.push(response.uri);
-                //   } else {
-                //     console.error('Failed to upload image');
-                //   }
-                // } catch (error) {
-                //   console.error('Error uploading image:', error);
-                // }
+                const imgSrc = ctnimg.querySelector('img').getAttribute('src');
+                const modifiedUrl = modifyImageUrl(imgSrc);
+                try {
+                  const imageBlob = await downloadImage(modifiedUrl);  
+                  const response = await uploadImageToTikTok(imageBlob); 
+                  if (response && response.url) {
+                    thumbnailImages.push(response.uri);
+                  } else {
+                    console.error('Failed to upload image');
+                  }
+                } catch (error) {
+                  console.error('Error uploading image:', error);
+                }
               }
         }
     }
@@ -201,6 +201,7 @@ async function scrapeProductData() {
     }
     return {
         title : titleProduct,
+        avatar_product : avatar_product,
         description : description,
         thumbnailImg : thumbnailImages,
         variants : variantsData
@@ -209,17 +210,17 @@ async function scrapeProductData() {
  async function uploadImageToTikTok(file, use_case = 'MAIN_IMAGE') {
     const convertedImage = await convertImageToJPEG(file);
     const formData = new FormData();
-    formData.append('data', convertedImage);  // Gửi file dưới dạng dữ liệu
-    formData.append('use_case', use_case);  // Cung cấp trường use_case (ví dụ: MAIN_IMAGE)
+    formData.append('data', convertedImage); 
+    formData.append('use_case', use_case);
   
-    return fetch('http://127.0.0.1:8000/app/ecommerce/products/upload_image_to_tiktok/', {
+    return fetch(`${apiUrl}/app/ecommerce/products/upload_image_to_tiktok/`, {
       method: 'POST',
       body: formData
     }).then(r => r.json());
   }
 async function sendProductDataToAPI(productData) {
     const accessToken = await chrome.storage.local.get('accessToken'); 
-    const url = 'http://127.0.0.1:8000/api/ex/product/'; 
+    const url = `${apiUrl}/api/ex/product/`; 
 
     try {
         const response = await fetch(url, {
@@ -253,7 +254,7 @@ function isAccessTokenExpired(token) {
 async function refreshAccessToken() {
     const { refreshToken } = await chrome.storage.local.get('refreshToken');
 
-    const response = await fetch('http://localhost:8000/api/token/refresh/', {  
+    const response = await fetch(`${apiUrl}/api/token/refresh/`, {  
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -275,39 +276,5 @@ async function refreshAccessToken() {
 
     return data.access;
 }
-const CLIENT_KEY = 'next_d8318c222f2d5e42ea4bcaf0f205a6ec1d';
-const SITEKEY    = '6LcSZ0wpAAAAAFfD';
-const PAGE_URL   = window.location.href;
-async function createTask() {
-    const res = await fetch('https://api.nextcaptcha.com/createTask', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        clientKey: CLIENT_KEY,
-        task: {
-          type: 'RecaptchaV2TaskProxyless',
-          websiteURL: PAGE_URL,
-          websiteKey: SITEKEY
-        }
-      })
-    });
-    const json = await res.json();
-    if (json.errorId !== 0) throw new Error(`API tạo task lỗi: ${json.errorDescription}`);
-    return json.taskId;
-  }
-  async function getResult(taskId) {
-    while (true) {
-      await new Promise(r => setTimeout(r, 5000));  // đợi 5s
-      const res = await fetch('https://api.nextcaptcha.com/getTaskResult', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientKey: CLIENT_KEY, taskId })
-      });
-      const json = await res.json();
-      if (json.errorId !== 0) throw new Error(`API lấy kết quả lỗi: ${json.errorDescription}`);
-      if (json.status === 'ready') {
-        return json.solution.gRecaptchaResponse;
-      }
-    }
-  }
+
 

@@ -12,7 +12,6 @@ window.onload = async() => {
     console.log(wrapperObject);
     
     if (wrapperObject !== null) {
-        // Sử dụng insertAdjacentHTML để thêm HTML vào cuối phần tử một cách an toàn
         wrapperObject.insertAdjacentHTML('beforeend', htmlTemplate);
         
         // Lắng nghe sự kiện click để thực hiện logic lấy dữ liệu sản phẩm
@@ -33,9 +32,9 @@ window.onload = async() => {
     }
 };
 async function refreshAccessToken() {
-    const { refreshToken } = await chrome.storage.local.get('refreshToken');  // Lấy refresh token từ storage
+    const { refreshToken } = await chrome.storage.local.get('refreshToken'); 
 
-    const response = await fetch('http://localhost:8000/api/token/refresh/', {  // Gọi API refresh token
+    const response = await fetch('http://localhost:8000/api/token/refresh/', {  
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -55,16 +54,5 @@ async function refreshAccessToken() {
         refreshToken: data.refresh
     });
 
-    return data.access;  // Trả về access token mới
+    return data.access;  
 }
-// async function scrapeProductsData() {
-//     const productLinks = document.querySelectorAll('.hm_bl a');  // Các link sản phẩm
-
-//     // Gửi yêu cầu mở các tab mới cho từng sản phẩm
-//     productLinks.forEach((link) => {
-//         chrome.runtime.sendMessage({
-//             action: "openTab",  // Gửi yêu cầu mở tab mới
-//             url: link.href
-//         });
-//     });
-// }

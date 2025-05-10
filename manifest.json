@@ -3,6 +3,7 @@
     "name": "VH Extension",
     "version": "1.0",
     "description": "A professional Chrome extension built with modular structure.",
+    "api_url": "http://127.0.0.1:8000",
     "action": {
       "default_popup": "popup/popup.html",
       "default_icon": {
@@ -11,19 +12,15 @@
       "128": "assets/icons/hello_extensions.png"
     }
     },
-    "background": {
-      "service_worker": "background/background.js",
-      "type": "module"
-    },
     "content_scripts": [
       {
         "matches": ["*://*.aliexpress.us/item/*"],
-        "js": ["lib/jwt-decode.min.js","lib/bootstrap.min.js","lib/popper.min.js","content/btnImportProduct.js"],
+        "js": ["lib/jwt-decode.min.js","lib/bootstrap.min.js","lib/popper.min.js","content/btnImportProduct.js","lib/jquery-3.6.0.min.js"],
         "css":["css/btnallScript.css","lib/bootstrap.min.css"]
       },
       {
         "matches": ["*://*.aliexpress.us/*"],
-        "js": ["lib/jwt-decode.min.js","content/authToken.js"]
+        "js": ["lib/jwt-decode.min.js"]
       }
     ],
     "permissions": [
