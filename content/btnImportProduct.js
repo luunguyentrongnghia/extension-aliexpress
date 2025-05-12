@@ -54,17 +54,6 @@ function cartesian(arrays) {
 function wait(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
-const checkRecaptcha = () => {
-    const iframe = document.querySelector('iframe[title="reCAPTCHA"]');
-    if (!iframe) return null;
-    try {
-      const url = new URL(iframe.src);
-      const sitekey = new URLSearchParams(url.search).get('k');
-      return sitekey;
-    } catch {
-      return null;
-    }
-  };
   async function downloadImage(url) {
     const response = await fetch(url);
     const blob = await response.blob();
@@ -103,7 +92,6 @@ async function scrapeProductData() {
     let thumbnailImages = []
     let variantsData = [];
     let description;
-    let avatar_product
     window.scrollTo(0, document.documentElement.scrollHeight);
     await wait(1000);
     const pdpLeftWrap = document.querySelector('.pdp-info-left');
@@ -118,16 +106,20 @@ async function scrapeProductData() {
     }
     if (pdpLeftWrap) {
         const thumbnailImg = pdpLeftWrap.querySelectorAll('[class^="slider--img"]');
-        avatar_product = thumbnailImg[0].querySelector('img').getAttribute('src');
-        if(thumbnailImg){
-            for (const ctnimg of thumbnailImg) {
+        if(thumbnailImg.length){
+             for (let i = 0; i < thumbnailImg.length; i++) {
+                const ctnimg = thumbnailImg[i];
                 const imgSrc = ctnimg.querySelector('img').getAttribute('src');
                 const modifiedUrl = modifyImageUrl(imgSrc);
                 try {
                   const imageBlob = await downloadImage(modifiedUrl);  
                   const response = await uploadImageToTikTok(imageBlob); 
                   if (response && response.url) {
-                    thumbnailImages.push(response.uri);
+                    thumbnailImages.push({
+                      url: response.url,
+                      uri: response.uri,
+                      display_order: i 
+                    });
                   } else {
                     console.error('Failed to upload image');
                   }
@@ -201,7 +193,6 @@ async function scrapeProductData() {
     }
     return {
         title : titleProduct,
-        avatar_product : avatar_product,
         description : description,
         thumbnailImg : thumbnailImages,
         variants : variantsData
@@ -220,6 +211,7 @@ async function scrapeProductData() {
   }
 async function sendProductDataToAPI(productData) {
     const accessToken = await chrome.storage.local.get('accessToken'); 
+    console.log(accessToken);
     const url = `${apiUrl}/api/ex/product/`; 
 
     try {
