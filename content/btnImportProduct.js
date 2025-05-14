@@ -107,7 +107,7 @@ async function scrapeProductData() {
     if (pdpLeftWrap) {
         const thumbnailImg = pdpLeftWrap.querySelectorAll('[class^="slider--img"]');
         if(thumbnailImg.length){
-             for (let i = 0; i < thumbnailImg.length; i++) {
+             for (let i = 0; i < thumbnailImg.length && i < 9; i++) {
                 const ctnimg = thumbnailImg[i];
                 const imgSrc = ctnimg.querySelector('img').getAttribute('src');
                 const modifiedUrl = modifyImageUrl(imgSrc);
