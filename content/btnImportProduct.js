@@ -29,6 +29,7 @@ window.onload = async() => {
             loadingContainer.style.display = "block";
             try {
                 const productData = await scrapeProductData();
+                console.log(productData);
                 const result=await sendProductDataToAPI(productData);
                 if(result){
                   alert('Thành công.');
@@ -96,13 +97,14 @@ async function scrapeProductData() {
     await wait(1000);
     const pdpLeftWrap = document.querySelector('.pdp-info-left');
     const pdprightWrap = document.querySelector('.pdp-info-right');
-    const ctnDescription = document.querySelector('[data-pl="product-description"]');
     const divCurrency = document.querySelector('[class^="ship-to--text"]');
     const currency = divCurrency
     ? divCurrency.querySelector('b').textContent.trim()
     : null;
+    const ctnDescription = document.querySelector('[data-pl="product-description"]');
     if(ctnDescription){
-        description = ctnDescription.innerHTML
+      ctnDescription.querySelectorAll('img').forEach(img => img.remove());
+      description = ctnDescription.innerHTML;
     }
     if (pdpLeftWrap) {
         const thumbnailImg = pdpLeftWrap.querySelectorAll('[class^="slider--img"]');
@@ -211,7 +213,6 @@ async function scrapeProductData() {
   }
 async function sendProductDataToAPI(productData) {
     const accessToken = await chrome.storage.local.get('accessToken'); 
-    console.log(accessToken);
     const url = `${apiUrl}/api/ex/product/`; 
 
     try {
