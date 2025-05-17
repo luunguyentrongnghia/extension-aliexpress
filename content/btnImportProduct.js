@@ -29,7 +29,9 @@ window.onload = async() => {
             loadingContainer.style.display = "block";
             try {
                 const productData = await scrapeProductData();
-                console.log(productData);
+                if(isAccessTokenExpired(accessToken)){
+                await refreshAccessToken();
+                }
                 const result=await sendProductDataToAPI(productData);
                 if(result){
                   alert('Thành công.');
@@ -101,11 +103,12 @@ async function scrapeProductData() {
     const currency = divCurrency
     ? divCurrency.querySelector('b').textContent.trim()
     : null;
-    const ctnDescription = document.querySelector('[data-pl="product-description"]');
-    if(ctnDescription){
-      ctnDescription.querySelectorAll('img').forEach(img => img.remove());
-      description = ctnDescription.innerHTML;
-    }
+   const ctnDescription = document.querySelector('[data-pl="product-description"]');
+if (ctnDescription) {
+  ctnDescription.querySelectorAll('img, a[href], iframe[src], script, video[src]').forEach(el => el.remove());
+
+  description = ctnDescription.innerHTML;
+}
     if (pdpLeftWrap) {
         const thumbnailImg = pdpLeftWrap.querySelectorAll('[class^="slider--img"]');
         if(thumbnailImg.length){
