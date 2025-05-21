@@ -29,6 +29,7 @@ window.onload = async() => {
             loadingContainer.style.display = "block";
             try {
                 const productData = await scrapeProductData();
+                console.log(productData);
                 if(isAccessTokenExpired(accessToken)){
                 await refreshAccessToken();
                 }
@@ -95,7 +96,6 @@ async function scrapeProductData() {
   let thumbnailImages = [];
   let variantsData = [];
   let description;
-  let primaryImage = null;
 
   window.scrollTo(0, document.documentElement.scrollHeight);
   await wait(1000);
@@ -112,7 +112,7 @@ async function scrapeProductData() {
     description = ctnDescription.innerHTML;
   }
 
-  // Lấy ảnh chính
+  // Lấy ảnh chính (thumbnail của sản phẩm)
   if (pdpLeftWrap) {
     const thumbnailImg = pdpLeftWrap.querySelectorAll('[class^="slider--img"]');
     for (let i = 0; i < thumbnailImg.length && i < 9; i++) {
@@ -135,7 +135,7 @@ async function scrapeProductData() {
       }
     }
   }
-
+  const normalize = str => (str || '').trim().toLowerCase();
   // Lấy thông tin biến thể
   if (pdprightWrap) {
     const ctnVariants = pdprightWrap.querySelector('[class^="sku-item--wrap"]');
@@ -143,31 +143,7 @@ async function scrapeProductData() {
 
     if (ctnVariants) {
       const propContainers = Array.from(ctnVariants.querySelectorAll('[class^="sku-item--property"]'));
-
-      // ✅ Check option đầu tiên có ảnh không
-      if (propContainers.length > 0) {
-        const firstOptionItems = propContainers[0].querySelectorAll('[class^="sku-item--skus"] > div');
-        for (const item of firstOptionItems) {
-          const imgEl = item.querySelector('img');
-          if (imgEl) {
-            const imgSrc = imgEl.getAttribute('src');
-            const modifiedUrl = modifyImageUrl(imgSrc);
-            try {
-              const imageBlob = await downloadImage(modifiedUrl);
-              const response = await uploadImageToTikTok(imageBlob);
-              if (response && response.uri && response.url) {
-                primaryImage = {
-                  uri: response.uri,
-                  url: response.url
-                };
-                break;
-              }
-            } catch (error) {
-              console.error('Error uploading option image:', error);
-            }
-          }
-        }
-      }
+      const colorImageMap = {};
 
       const groups = propContainers.map(prop => {
         const raw = prop.querySelector('[class^="sku-item--title"] > span')?.childNodes[0]?.textContent || '';
@@ -175,6 +151,30 @@ async function scrapeProductData() {
         const items = Array.from(prop.querySelectorAll('[class^="sku-item--skus"] > div'));
         return { name, items, propElem: prop };
       });
+
+      const firstPropName = groups[0].name;
+      const firstOptionItems = groups[0].items;
+
+      for (const item of firstOptionItems) {
+        const imgEl = item.querySelector('img');
+        if ( imgEl) {
+          const imgSrc = imgEl.getAttribute('src');
+           const label = normalize(imgEl?.getAttribute('alt'));
+          const modifiedUrl = modifyImageUrl(imgSrc);
+          try {
+            const imageBlob = await downloadImage(modifiedUrl);
+            const response = await uploadImageToTikTok(imageBlob);
+            if (response && response.uri && response.url) {
+              colorImageMap[label] = {
+                uri: response.uri,
+                url: response.url
+              };
+            }
+          } catch (error) {
+            console.error('Error uploading image for color option:', error);
+          }
+        }
+      }
 
       const combos = cartesian(groups.map(g => g.items));
       for (const combo of combos) {
@@ -199,15 +199,15 @@ async function scrapeProductData() {
           rec[name] = sel ? sel.textContent.trim() : null;
         });
 
-        // ✅ Gắn ảnh đầu tiên vào biến thể đầu tiên
-        if (primaryImage && variantsData.length === 0) {
-          rec.primary_image = primaryImage;
+        const firstPropValue = normalize(rec[firstPropName]);
+        if (firstPropValue && colorImageMap[firstPropValue]) {
+          rec.primary_image = colorImageMap[firstPropValue];
         }
 
         variantsData.push(rec);
       }
     } else {
-      // Không có biến thể
+      // Sản phẩm không có biến thể
       const priceEl = pdprightWrap.querySelector('.product-price');
       const price = priceEl ? parseFloat(priceEl.textContent.replace(/[^\d.]/g, '')) : null;
 
@@ -225,7 +225,7 @@ async function scrapeProductData() {
     title: titleProduct,
     description: description,
     thumbnailImg: thumbnailImages,
-    variants: variantsData
+    variants: variantsData,
   };
 }
  async function uploadImageToTikTok(file, use_case = 'MAIN_IMAGE') {
