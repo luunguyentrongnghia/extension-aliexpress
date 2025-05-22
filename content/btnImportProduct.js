@@ -92,18 +92,21 @@ function modifyImageUrl(url) {
     return url.replace(/(\d+)x(\d+)/, '960x960');
 }
 async function scrapeProductData() {
-  let titleProduct;
+  const normalize = str => (str || '').trim().toLowerCase();
+  const waitTime = ms => new Promise(res => setTimeout(res, ms));
+  const safeText = el => el?.textContent?.trim() || '';
+
+  let titleProduct = '';
   let thumbnailImages = [];
   let variantsData = [];
-  let description;
+  let description = '';
 
   window.scrollTo(0, document.documentElement.scrollHeight);
-  await wait(1000);
+  await waitTime(1000);
 
   const pdpLeftWrap = document.querySelector('.pdp-info-left');
   const pdprightWrap = document.querySelector('.pdp-info-right');
-  const divCurrency = document.querySelector('[class^="ship-to--text"]');
-  const currency = divCurrency ? divCurrency.querySelector('b').textContent.trim() : null;
+  const currency = document.querySelector('[class^="ship-to--text"] b')?.textContent.trim() || null;
 
   // Lấy mô tả sản phẩm
   const ctnDescription = document.querySelector('[data-pl="product-description"]');
@@ -112,118 +115,94 @@ async function scrapeProductData() {
     description = ctnDescription.innerHTML;
   }
 
-  // Lấy ảnh chính (thumbnail của sản phẩm)
-  if (pdpLeftWrap) {
-    const thumbnailImg = pdpLeftWrap.querySelectorAll('[class^="slider--img"]');
-    for (let i = 0; i < thumbnailImg.length && i < 9; i++) {
-      const imgSrc = thumbnailImg[i]?.querySelector('img')?.getAttribute('src');
-      if (!imgSrc) continue;
-
+  // Hàm tải và upload ảnh
+  async function handleImageUpload(imgSrc) {
+    try {
       const modifiedUrl = modifyImageUrl(imgSrc);
-      try {
-        const imageBlob = await downloadImage(modifiedUrl);
-        const response = await uploadImageToTikTok(imageBlob);
-        if (response && response.url && response.uri) {
-          thumbnailImages.push({
-            url: response.url,
-            uri: response.uri,
-            display_order: i
-          });
-        }
-      } catch (error) {
-        console.error('Error uploading thumbnail image:', error);
-      }
+      const blob = await downloadImage(modifiedUrl);
+      const uploaded = await uploadImageToTikTok(blob);
+      return uploaded?.url && uploaded?.uri ? uploaded : null;
+    } catch (err) {
+      console.error('Image upload error:', err);
+      return null;
     }
   }
-  const normalize = str => (str || '').trim().toLowerCase();
-  // Lấy thông tin biến thể
+
+  // Ảnh thumbnail chính
+  if (pdpLeftWrap) {
+    const thumbnailImg = pdpLeftWrap.querySelectorAll('[class^="slider--img"]');
+    const tasks = Array.from(thumbnailImg).slice(0, 9).map(async (imgEl, i) => {
+      const src = imgEl?.querySelector('img')?.getAttribute('src');
+      if (!src) return null;
+      const result = await handleImageUpload(src);
+      return result ? { ...result, display_order: i } : null;
+    });
+    thumbnailImages = (await Promise.all(tasks)).filter(Boolean);
+  }
+
+  // Xử lý biến thể
   if (pdprightWrap) {
+    titleProduct = safeText(pdprightWrap.querySelector('[class^="title--wrap"]'));
+
     const ctnVariants = pdprightWrap.querySelector('[class^="sku-item--wrap"]');
-    titleProduct = pdprightWrap.querySelector('[class^="title--wrap"]')?.textContent || '';
-
     if (ctnVariants) {
-      const propContainers = Array.from(ctnVariants.querySelectorAll('[class^="sku-item--property"]'));
+      const groups = Array.from(ctnVariants.querySelectorAll('[class^="sku-item--property"]')).map(prop => ({
+        name: normalize(prop.querySelector('[class^="sku-item--title"] > span')?.childNodes[0]?.textContent || ''),
+        items: Array.from(prop.querySelectorAll('[class^="sku-item--skus"] > div')),
+        propElem: prop
+      }));
+
       const colorImageMap = {};
+      const firstGroup = groups[0];
 
-      const groups = propContainers.map(prop => {
-        const raw = prop.querySelector('[class^="sku-item--title"] > span')?.childNodes[0]?.textContent || '';
-        const name = raw.replace(/["]/g, '').replace(':', '').trim().toLowerCase();
-        const items = Array.from(prop.querySelectorAll('[class^="sku-item--skus"] > div'));
-        return { name, items, propElem: prop };
+      // Upload ảnh biến thể đầu tiên (thường là màu)
+      const colorTasks = firstGroup.items.map(async item => {
+        const img = item.querySelector('img');
+        if (!img) return null;
+        const result = await handleImageUpload(img.getAttribute('src'));
+        const label = normalize(img.getAttribute('alt'));
+        return result ? { label, ...result } : null;
       });
-
-      const firstPropName = groups[0].name;
-      const firstOptionItems = groups[0].items;
-
-      for (const item of firstOptionItems) {
-        const imgEl = item.querySelector('img');
-        if ( imgEl) {
-          const imgSrc = imgEl.getAttribute('src');
-           const label = normalize(imgEl?.getAttribute('alt'));
-          const modifiedUrl = modifyImageUrl(imgSrc);
-          try {
-            const imageBlob = await downloadImage(modifiedUrl);
-            const response = await uploadImageToTikTok(imageBlob);
-            if (response && response.uri && response.url) {
-              colorImageMap[label] = {
-                uri: response.uri,
-                url: response.url
-              };
-            }
-          } catch (error) {
-            console.error('Error uploading image for color option:', error);
-          }
-        }
-      }
+      const colorResults = await Promise.all(colorTasks);
+      colorResults.forEach(r => {
+        if (r) colorImageMap[r.label] = { uri: r.uri, url: r.url };
+      });
 
       const combos = cartesian(groups.map(g => g.items));
       for (const combo of combos) {
         groups.forEach(g => g.items.forEach(i => i.classList.remove('active')));
-        for (const optionElem of combo) optionElem.click();
+        combo.forEach(opt => opt.click());
+        await waitTime(50);
 
-        await wait(500);
+        const price = parseFloat(pdprightWrap.querySelector('.product-price')?.textContent.replace(/[^\d.]/g, '')) || null;
+        const list_price = parseFloat(pdprightWrap.querySelector('[class^="price--originalText"]')?.textContent.replace(/[^\d.]/g, '')) || price;
+        const quantity = parseInt(document.querySelector('[class^="quantity--info"] span')?.textContent.match(/\d+/)?.[0]) || 1;
 
-        const priceEl = pdprightWrap.querySelector('.product-price');
-        const price = priceEl ? parseFloat(priceEl.textContent.replace(/[^\d.]/g, '')) : null;
-
-        const listEl = pdprightWrap.querySelector('[class^="price--originalText"]');
-        const list_price = listEl ? parseFloat(listEl.textContent.replace(/[^\d.]/g, '')) : price;
-
-        const ctnquantity = document.querySelector('[class^="quantity--info"] span');
-        const quantity = ctnquantity ? Number(ctnquantity.textContent.match(/\d+/)) : 1;
-
-        const rec = { price, list_price, currency, quantity };
-
+        const rec = { price: list_price, list_price, currency, quantity };
         groups.forEach(({ name, propElem }) => {
-          const sel = propElem.querySelector('[class^="sku-item--title"] > span span');
-          rec[name] = sel ? sel.textContent.trim() : null;
+          rec[name] = safeText(propElem.querySelector('[class^="sku-item--title"] > span span'));
         });
 
-        const firstPropValue = normalize(rec[firstPropName]);
-        if (firstPropValue && colorImageMap[firstPropValue]) {
-          rec.primary_image = colorImageMap[firstPropValue];
+        const mainLabel = normalize(rec[firstGroup.name]);
+        if (mainLabel && colorImageMap[mainLabel]) {
+          rec.primary_image = colorImageMap[mainLabel];
         }
 
         variantsData.push(rec);
       }
     } else {
       // Sản phẩm không có biến thể
-      const priceEl = pdprightWrap.querySelector('.product-price');
-      const price = priceEl ? parseFloat(priceEl.textContent.replace(/[^\d.]/g, '')) : null;
+      const price = parseFloat(pdprightWrap.querySelector('.product-price')?.textContent.replace(/[^\d.]/g, '')) || null;
+      const list_price = parseFloat(pdprightWrap.querySelector('[class^="price--originalText"]')?.textContent.replace(/[^\d.]/g, '')) || price;
+      const quantity = parseInt(document.querySelector('[class^="quantity--info"] span')?.textContent.match(/\d+/)?.[0]) || 1;
 
-      const listEl = pdprightWrap.querySelector('[class^="price--originalText"]');
-      const list_price = listEl ? parseFloat(listEl.textContent.replace(/[^\d.]/g, '')) : price;
-
-      const ctnquantity = document.querySelector('[class^="quantity--info"] span');
-      const quantity = ctnquantity ? Number(ctnquantity.textContent.match(/\d+/)) : 1;
-
-      variantsData.push({ price, list_price, currency, quantity });
+      variantsData.push({ price: list_price, list_price, currency, quantity });
     }
   }
 
   return {
     title: titleProduct,
-    description: description,
+    description,
     thumbnailImg: thumbnailImages,
     variants: variantsData,
   };
