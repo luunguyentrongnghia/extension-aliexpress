@@ -203,6 +203,7 @@ async function scrapeProductData() {
   return {
     title: titleProduct,
     description,
+    "source":"aliexpress",
     thumbnailImg: thumbnailImages,
     variants: variantsData,
   };
