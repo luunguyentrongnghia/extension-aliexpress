@@ -58,36 +58,7 @@ function cartesian(arrays) {
 function wait(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
-  async function downloadImage(url) {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return blob;
-}
-function convertImageToJPEG(blob) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const url = URL.createObjectURL(blob);
-  
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-        canvas.toBlob((newBlob) => {
-          resolve(newBlob);
-          URL.revokeObjectURL(url); 
-        }, 'image/jpeg'); 
-      };
-  
-      img.onerror = function() {
-        reject('Image conversion failed');
-        URL.revokeObjectURL(url);
-      };
-  
-      img.src = url;
-    });
-  }
+
 function modifyImageUrl(url) {
     return url.replace(/(\d+)x(\d+)/, '960x960');
 }
@@ -115,29 +86,17 @@ async function scrapeProductData() {
     description = ctnDescription.innerHTML;
   }
 
-  // Hàm tải và upload ảnh
-  async function handleImageUpload(imgSrc) {
-    try {
-      const modifiedUrl = modifyImageUrl(imgSrc);
-      const blob = await downloadImage(modifiedUrl);
-      const uploaded = await uploadImageToTikTok(blob);
-      return uploaded?.url && uploaded?.uri ? uploaded : null;
-    } catch (err) {
-      console.error('Image upload error:', err);
-      return null;
-    }
-  }
-
   // Ảnh thumbnail chính
   if (pdpLeftWrap) {
     const thumbnailImg = pdpLeftWrap.querySelectorAll('[class^="slider--img"]');
-    const tasks = Array.from(thumbnailImg).slice(0, 9).map(async (imgEl, i) => {
-      const src = imgEl?.querySelector('img')?.getAttribute('src');
-      if (!src) return null;
-      const result = await handleImageUpload(src);
-      return result ? { ...result, display_order: i } : null;
-    });
-    thumbnailImages = (await Promise.all(tasks)).filter(Boolean);
+    thumbnailImages = Array.from(thumbnailImg)
+      .slice(0, 9)
+      .map((imgEl, i) => {
+        const src = imgEl?.querySelector('img')?.getAttribute('src');
+        if (!src) return null;
+        return { url: modifyImageUrl(src), display_order: i };
+      })
+      .filter(Boolean);
   }
 
   // Xử lý biến thể
@@ -155,17 +114,16 @@ async function scrapeProductData() {
       const colorImageMap = {};
       const firstGroup = groups[0];
 
-      // Upload ảnh biến thể đầu tiên (thường là màu)
-      const colorTasks = firstGroup.items.map(async item => {
+      const colorResults = firstGroup.items.map(item => {
         const img = item.querySelector('img');
         if (!img) return null;
-        const result = await handleImageUpload(img.getAttribute('src'));
         const label = normalize(img.getAttribute('alt'));
-        return result ? { label, ...result } : null;
+        const src = img.getAttribute('src');
+        return { label, url: modifyImageUrl(src) };
       });
-      const colorResults = await Promise.all(colorTasks);
+
       colorResults.forEach(r => {
-        if (r) colorImageMap[r.label] = { uri: r.uri, url: r.url };
+        if (r) colorImageMap[r.label] = { url: r.url };
       });
 
       const combos = cartesian(groups.map(g => g.items));
@@ -203,22 +161,12 @@ async function scrapeProductData() {
   return {
     title: titleProduct,
     description,
-    "source":"aliexpress",
+    source: "aliexpress",
     thumbnailImg: thumbnailImages,
     variants: variantsData,
   };
 }
- async function uploadImageToTikTok(file, use_case = 'MAIN_IMAGE') {
-    const convertedImage = await convertImageToJPEG(file);
-    const formData = new FormData();
-    formData.append('data', convertedImage); 
-    formData.append('use_case', use_case);
-  
-    return fetch(`${apiUrl}/app/ecommerce/products/upload_image_to_tiktok/`, {
-      method: 'POST',
-      body: formData
-    }).then(r => r.json());
-  }
+
 async function sendProductDataToAPI(productData) {
     const accessToken = await chrome.storage.local.get('accessToken'); 
     const url = `${apiUrl}/api/ex/product/`; 
