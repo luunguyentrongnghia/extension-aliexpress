@@ -7,14 +7,14 @@
     "action": {
       "default_popup": "popup/popup.html",
       "default_icon": {
-      "16": "assets/icons/hello_extensions.png",
-      "48": "assets/icons/hello_extensions.png",
-      "128": "assets/icons/hello_extensions.png"
+      "16": "assets/icons/logovh.png",
+      "48": "assets/icons/logovh.png",
+      "128": "assets/icons/logovh.png"
     }
     },
     "content_scripts": [
       {
-        "matches": ["*://*.aliexpress.us/item/*"],
+        "matches": ["*://*.aliexpress.us/item/*","*://*.aliexpress.com/item/*"],
         "js": ["lib/jwt-decode.min.js","lib/bootstrap.min.js","lib/popper.min.js","content/btnImportProduct.js","lib/jquery-3.6.0.min.js"],
         "css":["css/btnallScript.css","lib/bootstrap.min.css"]
       },
