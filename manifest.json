@@ -3,7 +3,7 @@
     "name": "VH Extension",
     "version": "1.0",
     "description": "A professional Chrome extension built with modular structure.",
-    "api_url": "http://127.0.0.1:8000",
+    "api_url": "https://vhmediaco.app",
     "icons": {
     "16": "assets/icons/logo_centered.png",
     "48": "assets/icons/logo_centered.png",
