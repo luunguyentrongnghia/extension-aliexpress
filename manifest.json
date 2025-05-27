@@ -5,16 +5,16 @@
     "description": "A professional Chrome extension built with modular structure.",
     "api_url": "https://vhmediaco.app",
     "icons": {
-    "16": "assets/icons/logo_centered.png",
-    "48": "assets/icons/logo_centered.png",
-    "128": "assets/icons/logo_centered.png"
+    "16": "assets/icons/logovhex.png",
+    "48": "assets/icons/logovhex.png",
+    "128": "assets/icons/logovhex.png"
     },
     "action": {
       "default_popup": "popup/popup.html",
       "default_icon": {
-      "16": "assets/icons/logo_centered.png",
-      "48": "assets/icons/logo_centered.png",
-      "128": "assets/icons/logo_centered.png"
+      "16": "assets/icons/logovhex.png",
+      "48": "assets/icons/logovhex.png",
+      "128": "assets/icons/logovhex.png"
     }
     },
     "content_scripts": [
