@@ -4,12 +4,17 @@
     "version": "1.0",
     "description": "A professional Chrome extension built with modular structure.",
     "api_url": "http://127.0.0.1:8000",
+    "icons": {
+    "16": "assets/icons/logo_centered.png",
+    "48": "assets/icons/logo_centered.png",
+    "128": "assets/icons/logo_centered.png"
+    },
     "action": {
       "default_popup": "popup/popup.html",
       "default_icon": {
-      "16": "assets/icons/logovh.png",
-      "48": "assets/icons/logovh.png",
-      "128": "assets/icons/logovh.png"
+      "16": "assets/icons/logo_centered.png",
+      "48": "assets/icons/logo_centered.png",
+      "128": "assets/icons/logo_centered.png"
     }
     },
     "content_scripts": [

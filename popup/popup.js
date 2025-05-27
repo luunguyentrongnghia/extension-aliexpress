@@ -8,11 +8,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const settingsContent = document.getElementById("settingsContent");
     const loginContent = document.getElementById("loginContent");
     const { refreshToken } = await chrome.storage.local.get('refreshToken');
+    const { username } = await chrome.storage.local.get('username');
     if (refreshToken && !isRefreshTokenExpired(refreshToken)) {
         setActiveTab(homeTab, homeContent);
         settingsTab.style.display = "block";
         homeTab.style.display = "block";
         loginTab.style.display = "none"; 
+         const userEl = document.getElementById("usernameDisplay");
+    if (userEl && username) userEl.innerText = username;
     } else {
         setActiveTab(loginTab, loginContent);
         loginTab.style.display = "block";
@@ -70,9 +73,11 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         }
 
         const data = await response.json();
+        console.log(data);
         await chrome.storage.local.set({
             accessToken: data.access,
-            refreshToken: data.refresh
+            refreshToken: data.refresh,
+            username: data.username
         });
 
         document.getElementById('status').innerText = 'Login successful!';
